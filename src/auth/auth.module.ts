@@ -16,6 +16,8 @@ import { JwtAuthGuard } from './guards/jwt-auth/jwt-auth.guard';
 import { RolesGuard } from './guards/roles/roles.guard';
 import googleOauthConfig from './config/google-oauth.config';
 import { GoogleStrategy } from './strategies/google.strategy';
+import { MicrosoftStrategy } from './strategies/microsoft.strategy';
+import microsoftOauthConfig from './config/microsoft-oauth.config';
 
 @Module({
   imports: [
@@ -24,6 +26,7 @@ import { GoogleStrategy } from './strategies/google.strategy';
     ConfigModule.forFeature(jwtConfig),
     ConfigModule.forFeature(refreshJwtConfig),
     ConfigModule.forFeature(googleOauthConfig),
+    ConfigModule.forFeature(microsoftOauthConfig),
   ],
   controllers: [AuthController],
   providers: [
@@ -33,6 +36,7 @@ import { GoogleStrategy } from './strategies/google.strategy';
     JwtStrategy,
     RefreshJwtStrategy,
     GoogleStrategy,
+    MicrosoftStrategy,
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
   ],

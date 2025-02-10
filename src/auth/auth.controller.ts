@@ -18,6 +18,7 @@ import { Public } from './decorators/public.decorator';
 import { UserService } from 'src/user/user.service';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { GoogleAuthGuard } from './guards/google-auth/google-auth.guard';
+import { MicrosoftAuthGuard } from './guards/microsoft-auth/microsoft-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -65,6 +66,22 @@ export class AuthController {
   @Get('google/callback')
   async googleCallback(@Req() req, @Res() res) {
     const response = await this.authService.login(req.user.id);
+    res.redirect(
+      `http://localhost:5173?accessToken=${response.data.accessToken}&refreshToken=${response.data.refreshToken}`,
+    );
+  }
+
+  @Public()
+  @UseGuards(MicrosoftAuthGuard)
+  @Get('microsoft/login')
+  async microsoftLogin() {}
+
+  @Public()
+  @UseGuards(MicrosoftAuthGuard)
+  @Get('microsoft/callback')
+  async microsoftCallback(@Req() req, @Res() res) {
+    const response = await this.authService.login(req.user.id);
+
     res.redirect(
       `http://localhost:5173?accessToken=${response.data.accessToken}&refreshToken=${response.data.refreshToken}`,
     );
