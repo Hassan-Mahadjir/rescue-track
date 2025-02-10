@@ -6,24 +6,31 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-import * as bcrypt from 'bcrypt';
+import * as argon2 from 'argon2';
+import { Role } from 'src/auth/enums/role.enums';
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ unique: true })
   email: string;
 
   @Column()
   password: string;
 
+  @Column({ type: 'enum', enum: Role, default: Role.EMPLOYEE })
+  role: Role;
+
   @CreateDateColumn()
   createdAt: Date;
 
+  @Column({ nullable: true, type: 'text' })
+  hashedRefreshToken: string | null;
+
   @BeforeInsert()
   async hashPassword() {
-    this.password = await bcrypt.hashSync(this.password, 10);
+    this.password = await argon2.hash(this.password);
   }
 }
