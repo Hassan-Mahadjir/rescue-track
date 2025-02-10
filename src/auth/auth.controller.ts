@@ -1,11 +1,13 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
   Req,
   Request,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -15,6 +17,7 @@ import { JwtAuthGuard } from './guards/jwt-auth/jwt-auth.guard';
 import { Public } from './decorators/public.decorator';
 import { UserService } from 'src/user/user.service';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
+import { GoogleAuthGuard } from './guards/google-auth/google-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -50,5 +53,20 @@ export class AuthController {
   async logout(@Req() req) {
     this.authService.logout(req.user.id);
     return { message: 'Logout successful' };
+  }
+
+  @Public()
+  @UseGuards(GoogleAuthGuard)
+  @Get('google/login')
+  googleLogin() {}
+
+  @Public()
+  @UseGuards(GoogleAuthGuard)
+  @Get('google/callback')
+  async googleCallback(@Req() req, @Res() res) {
+    const response = await this.authService.login(req.user.id);
+    res.redirect(
+      `http://localhost:5173?accessToken=${response.data.accessToken}&refreshToken=${response.data.refreshToken}`,
+    );
   }
 }
