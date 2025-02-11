@@ -29,6 +29,12 @@ export class User {
   @Column({ nullable: true, type: 'text' })
   hashedRefreshToken: string | null;
 
+  @Column({ nullable: true })
+  resetCode: string;
+
+  @Column({ nullable: true })
+  resetCodeExpiry: Date;
+
   @BeforeInsert()
   async hashPassword() {
     this.password = await argon2.hash(this.password);

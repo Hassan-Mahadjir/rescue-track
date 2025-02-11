@@ -1,10 +1,13 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
   HttpCode,
   HttpStatus,
+  Patch,
   Post,
+  Put,
   Req,
   Request,
   Res,
@@ -19,6 +22,9 @@ import { UserService } from 'src/user/user.service';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { GoogleAuthGuard } from './guards/google-auth/google-auth.guard';
 import { MicrosoftAuthGuard } from './guards/microsoft-auth/microsoft-auth.guard';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { EmailDto } from './dto/email.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -84,6 +90,49 @@ export class AuthController {
 
     res.redirect(
       `http://localhost:5173?accessToken=${response.data.accessToken}&refreshToken=${response.data.refreshToken}`,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('change-password')
+  async changePassword(
+    @Req() req,
+    @Body() changePasswordDto: ChangePasswordDto,
+  ) {
+    return this.authService.changePassword(
+      req.user.id,
+      changePasswordDto.oldPassword,
+      changePasswordDto.newPassword,
+    );
+  }
+
+  @Public()
+  @Post('send-verification-email')
+  async sendVerificationEmail(@Body() emailDto: EmailDto) {
+    return this.authService.sendCodeEmail(emailDto.email);
+  }
+
+  @Public()
+  @Patch('forget-password')
+  async forgetPassword(@Body() forgetPasswordDto: CreateUserDto) {
+    return this.authService.forgetPassword(
+      forgetPasswordDto.email,
+      forgetPasswordDto.password,
+    );
+  }
+
+  @Public()
+  @Post('validate-resetCode')
+  async validateResetCode(@Body() resetPasswordDto: ResetPasswordDto) {
+    if (!resetPasswordDto.email)
+      throw new BadRequestException('Email is required');
+
+    if (!resetPasswordDto.resetCode)
+      throw new BadRequestException('Reset code is required');
+
+    return this.authService.validateCode(
+      resetPasswordDto.email,
+      resetPasswordDto.resetCode,
     );
   }
 }

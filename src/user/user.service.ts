@@ -36,15 +36,22 @@ export class UserService {
   findOne(id: number) {
     return this.UserRepo.findOne({
       where: { id },
-      select: ['id', 'email', 'role'],
+      select: ['id', 'email', 'password', 'role'],
     });
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: number, updateUserDto: UpdateUserDto) {
+    return await this.UserRepo.update({ id }, updateUserDto);
   }
 
   remove(id: number) {
     return `This action removes a #${id} user`;
+  }
+
+  async updateHashedPassword(userId: number, newHashedPassword: string) {
+    return await this.UserRepo.update(
+      { id: userId },
+      { password: newHashedPassword },
+    );
   }
 }

@@ -1,10 +1,11 @@
 import { IsString, Length } from 'class-validator';
 
-export class CreateUserDto {
+export class ChangePasswordDto {
   @IsString()
-  email: string;
+  @Length(6, 20)
+  oldPassword: string;
 
   @IsString()
   @Length(6, 20)
-  password: string;
+  newPassword: string;
 }

@@ -18,6 +18,7 @@ import googleOauthConfig from './config/google-oauth.config';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { MicrosoftStrategy } from './strategies/microsoft.strategy';
 import microsoftOauthConfig from './config/microsoft-oauth.config';
+import { MailService } from 'src/mail/mail.service';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import microsoftOauthConfig from './config/microsoft-oauth.config';
     RefreshJwtStrategy,
     GoogleStrategy,
     MicrosoftStrategy,
+    MailService,
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
   ],
