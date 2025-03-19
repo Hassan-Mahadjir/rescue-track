@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Req,
+  BadRequestException,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -16,10 +17,15 @@ import { ParseIdPipe } from './pipes/parseIdpipe';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth/jwt-auth.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enums';
+import { ProfileService } from 'src/profile/profile.service';
+import { UpdateProfileDto } from 'src/profile/dto/update-profile.dto';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private profileService: ProfileService,
+  ) {}
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
@@ -29,7 +35,17 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Get('profile')
   getProfile(@Req() req) {
-    return this.userService.findOne(req.user.id);
+    const prifle = this.profileService.findOne(req.user.id);
+    return prifle;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('profile')
+  updateProfile(@Req() req, @Body() updateProfileDto: UpdateProfileDto) {
+    const userId = Number(req.user.id);
+    if (isNaN(userId)) throw new BadRequestException('Invalid user id');
+
+    return this.profileService.update(userId, updateProfileDto);
   }
 
   @Get()

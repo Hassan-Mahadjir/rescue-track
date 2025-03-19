@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { MailModule } from './mail/mail.module';
+import { ProfileModule } from './profile/profile.module';
 import dbConfig from './config/db.config';
 import dbConfigProduction from './config/db.config.production';
 
@@ -25,6 +26,7 @@ import dbConfigProduction from './config/db.config.production';
     UserModule,
     AuthModule,
     MailModule,
+    ProfileModule,
   ],
 })
 export class AppModule {}
