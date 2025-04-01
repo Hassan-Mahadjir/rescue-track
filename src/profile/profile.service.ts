@@ -18,7 +18,6 @@ import { Nationality } from './enums/nationality.enums';
 export class ProfileService {
   constructor(
     @InjectRepository(Profile) private profileRepository: Repository<Profile>,
-    @InjectRepository(User) private userRepository: Repository<User>,
     private userService: UserService,
   ) {}
 

@@ -4,10 +4,14 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/entities/user.entity';
 import { Repository } from 'typeorm';
+import { ProfileService } from 'src/profile/profile.service';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectRepository(User) private UserRepo: Repository<User>) {}
+  constructor(
+    // private profileService: ProfileService,
+    @InjectRepository(User) private UserRepo: Repository<User>,
+  ) {}
 
   async updateHashedRefreshToken(
     userId: number,
