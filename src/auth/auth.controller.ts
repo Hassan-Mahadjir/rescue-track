@@ -25,6 +25,7 @@ import { MicrosoftAuthGuard } from './guards/microsoft-auth/microsoft-auth.guard
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { EmailDto } from './dto/email.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { CreateProfileDto } from 'src/profile/dto/create-profile.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -36,7 +37,10 @@ export class AuthController {
   @Public()
   @Post('signup')
   async signup(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+    const { email, password, ...profileField } = createUserDto;
+    const profileData: CreateProfileDto = profileField as CreateProfileDto;
+
+    return this.userService.create(createUserDto, profileData);
   }
 
   @Public()

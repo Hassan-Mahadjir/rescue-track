@@ -19,6 +19,7 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enums';
 import { ProfileService } from 'src/profile/profile.service';
 import { UpdateProfileDto } from 'src/profile/dto/update-profile.dto';
+import { CreateProfileDto } from 'src/profile/dto/create-profile.dto';
 
 @Controller('user')
 export class UserController {
@@ -29,7 +30,10 @@ export class UserController {
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+    const { email, password, ...profileField } = createUserDto;
+    const profileData: CreateProfileDto = profileField as CreateProfileDto;
+
+    return this.userService.create(createUserDto, profileData);
   }
 
   @UseGuards(JwtAuthGuard)

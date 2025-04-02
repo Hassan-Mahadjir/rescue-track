@@ -14,6 +14,7 @@ import * as argon2 from 'argon2';
 import { CurrentUser } from './types/current-user';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { MailService } from 'src/mail/mail.service';
+import { CreateProfileDto } from 'src/profile/dto/create-profile.dto';
 
 @Injectable()
 export class AuthService {
@@ -103,11 +104,14 @@ export class AuthService {
     return currentUser;
   }
 
-  async validateGoogleUser(googleUser: CreateUserDto) {
+  async validateGoogleUser(
+    googleUser: CreateUserDto,
+    profileInfo: CreateProfileDto,
+  ) {
     const user = await this.userService.findByEmail(googleUser.email);
-    if (!user) return await this.userService.create(googleUser);
+    if (user) return user;
 
-    return user;
+    return await this.userService.create(googleUser, profileInfo);
   }
 
   async changePassword(
