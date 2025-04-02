@@ -40,7 +40,7 @@ export class Profile {
   @Column({ nullable: true, type: 'enum', enum: Nationality })
   nationality: Nationality;
 
-  @Column()
+  @Column({ nullable: true })
   dateofBirth: Date;
 
   @CreateDateColumn({ type: 'timestamp' })

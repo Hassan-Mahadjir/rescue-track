@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   HttpException,
   HttpStatus,
   Injectable,
@@ -35,24 +36,24 @@ export class UserService {
     createUserDto: CreateUserDto,
     createProfileDto: CreateProfileDto,
   ) {
-    try {
-      const user = await this.UserRepo.create(createUserDto);
-      await this.UserRepo.save(user);
-
-      if (createUserDto) {
-        const userProfile = await this.createProfile(user.id, createProfileDto);
-      }
-      return {
-        statusCode: HttpStatus.CREATED,
-        message: 'User created successfully',
-        user,
-      };
-    } catch (error) {
-      throw new HttpException(
-        'Error creating user (User already exists)',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+    const existingUser = await this.UserRepo.findOne({
+      where: { email: createUserDto.email },
+    });
+    if (existingUser) {
+      throw new ConflictException('Email already exists');
     }
+
+    const user = await this.UserRepo.create(createUserDto);
+    await this.UserRepo.save(user);
+
+    if (createProfileDto) {
+      await this.createProfile(user.id, createProfileDto);
+    }
+    return {
+      statusCode: HttpStatus.CREATED,
+      message: 'User created successfully',
+      user,
+    };
   }
 
   async createProfile(userId: number, createProfileDto: CreateProfileDto) {
@@ -65,21 +66,13 @@ export class UserService {
       nationality: createProfileDto.nationality as Nationality,
       user,
     });
-
-    try {
-      // Save profile object
-      const profile = await this.profileRepository.save(newProfile);
-      return {
-        statusCode: HttpStatus.CREATED,
-        message: 'Profile created successfully',
-        profile,
-      };
-    } catch (error) {
-      throw new HttpException(
-        'Error creating profile',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+    // Save profile object
+    const profile = await this.profileRepository.save(newProfile);
+    return {
+      statusCode: HttpStatus.CREATED,
+      message: 'Profile created successfully',
+      profile,
+    };
   }
 
   async findByEmail(email: string) {

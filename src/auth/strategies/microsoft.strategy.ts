@@ -28,21 +28,23 @@ export class MicrosoftStrategy extends PassportStrategy(Strategy) {
     profile: any,
     done: VerifyCallback,
   ) {
+    console.log({ profile });
     const user = await this.authService.validateGoogleUser(
       {
         email: profile.userPrincipalName,
         password: '',
       },
       {
+        // ._JSON.jobTitle is just for testing purpose
         firstName: profile.name.givenName,
         lastName: profile.name.familyName,
         avatar: profile.photos[0]?.value || '',
-        middleName: profile.name.middleName || null,
+        middleName: profile._json.jobTitle || null,
         address: profile.address || null,
-        phone: profile.phone || null,
-        nationality: profile.nationality || null,
-        gender: profile.gender || null,
-        dateofBirth: profile.birthday || null,
+        phone: profile._json.mobilePhone || null,
+        nationality: profile._json.mobilePhone || null,
+        gender: profile._json.jobTitle || null,
+        dateofBirth: profile._josn.jobTitle || null,
       },
     );
 
