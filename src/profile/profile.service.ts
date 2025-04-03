@@ -9,7 +9,6 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Profile } from 'src/entities/profile.entity';
 import { Repository } from 'typeorm';
-import { User } from 'src/entities/user.entity';
 import { UserService } from 'src/user/user.service';
 import { Gender } from './enums/gender.enums';
 import { Nationality } from './enums/nationality.enums';
@@ -92,6 +91,10 @@ export class ProfileService {
   }
 
   remove(id: number) {
-    return `This action removes a #${id} profile`;
+    const deleteResult = this.profileRepository.delete({ user: { id } });
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Profile deleted successfully',
+    };
   }
 }

@@ -14,6 +14,7 @@ import { Profile } from 'src/entities/profile.entity';
 import { CreateProfileDto } from 'src/profile/dto/create-profile.dto';
 import { Gender } from 'src/profile/enums/gender.enums';
 import { Nationality } from 'src/profile/enums/nationality.enums';
+import { Role } from 'src/auth/enums/role.enums';
 
 @Injectable()
 export class UserService {
@@ -52,7 +53,7 @@ export class UserService {
     return {
       statusCode: HttpStatus.CREATED,
       message: 'User created successfully',
-      user,
+      data: user,
     };
   }
 
@@ -71,7 +72,7 @@ export class UserService {
     return {
       statusCode: HttpStatus.CREATED,
       message: 'Profile created successfully',
-      profile,
+      data: profile,
     };
   }
 
@@ -98,8 +99,17 @@ export class UserService {
     return await this.UserRepo.update({ id }, updateUserDto);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(userId: number) {
+    const userProfile = await this.profileRepository.findOne({
+      where: { user: { id: userId } },
+    });
+    if (!userProfile) {
+      throw new NotFoundException('Profile not found');
+    }
+
+    await this.profileRepository.remove(userProfile);
+
+    return await this.UserRepo.delete({ id: userId });
   }
 
   async updateHashedPassword(userId: number, newHashedPassword: string) {
@@ -107,5 +117,16 @@ export class UserService {
       { id: userId },
       { password: newHashedPassword },
     );
+  }
+
+  async getStaff() {
+    const staff = await this.UserRepo.find({ relations: ['profile'] });
+
+    if (!staff) throw new NotFoundException('No staff found');
+    return {
+      statusCode: HttpStatus.OK,
+      message: `${staff.length} - Staff fetched successfully`,
+      data: staff,
+    };
   }
 }
