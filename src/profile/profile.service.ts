@@ -65,7 +65,7 @@ export class ProfileService {
     return {
       statusCode: HttpStatus.OK,
       message: 'Profile fetched successfully.',
-      userProfile,
+      data: userProfile,
     };
   }
 
@@ -86,7 +86,7 @@ export class ProfileService {
     return {
       statusCode: HttpStatus.OK,
       message: 'Profile updated successfully',
-      profile: updatedProfile,
+      data: updatedProfile,
     };
   }
 
