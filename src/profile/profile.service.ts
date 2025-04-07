@@ -10,8 +10,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Profile } from 'src/entities/profile.entity';
 import { Repository } from 'typeorm';
 import { UserService } from 'src/user/user.service';
-import { Gender } from './enums/gender.enums';
-import { Nationality } from './enums/nationality.enums';
+import { Gender } from '../enums/gender.enums';
+import { Nationality } from '../enums/nationality.enums';
 
 @Injectable()
 export class ProfileService {

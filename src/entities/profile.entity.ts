@@ -1,4 +1,4 @@
-import { Nationality } from 'src/profile/enums/nationality.enums';
+import { Nationality } from 'src/enums/nationality.enums';
 import {
   Column,
   CreateDateColumn,
@@ -9,7 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from './user.entity';
-import { Gender } from 'src/profile/enums/gender.enums';
+import { Gender } from 'src/enums/gender.enums';
 
 @Entity()
 export class Profile {

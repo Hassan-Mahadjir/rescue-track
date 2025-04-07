@@ -4,6 +4,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -11,6 +12,7 @@ import {
 import * as argon2 from 'argon2';
 import { Role } from 'src/auth/enums/role.enums';
 import { Profile } from './profile.entity';
+import { Patient } from './patient.entity';
 
 @Entity()
 export class User {
@@ -41,6 +43,14 @@ export class User {
   // Relationship with PROFILE
   @OneToOne(() => Profile, (profile) => profile.user)
   profile: Profile;
+
+  // Relationship with PATIENT
+  @OneToMany(() => Patient, (patient) => patient.responsible)
+  patients: Patient[];
+
+  // Relationship with PATIENT UPDATE HISTORY
+  @OneToMany(() => Patient, (patient) => patient.updateHistory)
+  updateHistory: Patient[];
 
   @BeforeInsert()
   async hashPassword() {

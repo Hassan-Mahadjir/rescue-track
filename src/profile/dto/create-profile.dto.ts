@@ -7,8 +7,8 @@ import {
   IsUrl,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { Nationality } from '../enums/nationality.enums';
-import { Gender } from '../enums/gender.enums';
+import { Nationality } from 'src/enums/nationality.enums';
+import { Gender } from 'src/enums/gender.enums';
 
 export class CreateProfileDto {
   @IsString()

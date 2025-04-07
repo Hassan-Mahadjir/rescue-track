@@ -12,8 +12,8 @@ import { User } from 'src/entities/user.entity';
 import { Repository } from 'typeorm';
 import { Profile } from 'src/entities/profile.entity';
 import { CreateProfileDto } from 'src/profile/dto/create-profile.dto';
-import { Gender } from 'src/profile/enums/gender.enums';
-import { Nationality } from 'src/profile/enums/nationality.enums';
+import { Gender } from 'src/enums/gender.enums';
+import { Nationality } from 'src/enums/nationality.enums';
 import { Role } from 'src/auth/enums/role.enums';
 
 @Injectable()

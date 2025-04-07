@@ -10,11 +10,11 @@ import { ProfileModule } from './profile/profile.module';
 import dbConfig from './config/db.config';
 import dbConfigProduction from './config/db.config.production';
 import { DevtoolsModule } from '@nestjs/devtools-integration';
-import { PatientService } from './patient/patient.service';
+import { PatientModule } from './patient/patient.module';
 
 @Module({
   controllers: [AppController],
-  providers: [AppService, PatientService],
+  providers: [AppService],
   imports: [
     DevtoolsModule.register({
       http: process.env.NODE_ENV !== 'production',
@@ -32,6 +32,7 @@ import { PatientService } from './patient/patient.service';
     AuthModule,
     MailModule,
     ProfileModule,
+    PatientModule,
   ],
 })
 export class AppModule {}
