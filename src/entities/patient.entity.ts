@@ -9,10 +9,10 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
 } from 'typeorm';
 import { User } from './user.entity';
 import { PatientUpdateHistory } from './patientUpdateHistory.entity';
+import { PatientCareReport } from './patient-care-report.entity';
 
 @Entity()
 export class Patient {
@@ -66,4 +66,8 @@ export class Patient {
   // Relationship with PatientUpdateHistory
   @OneToMany(() => PatientUpdateHistory, (history) => history.patient)
   updateHistory: PatientUpdateHistory[];
+
+  // Relationship with PatientCareReport
+  @OneToMany(() => PatientCareReport, (report) => report.patient)
+  patientCareReport: PatientCareReport[];
 }

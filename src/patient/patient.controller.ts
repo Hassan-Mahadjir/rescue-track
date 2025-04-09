@@ -75,7 +75,8 @@ export class PatientController {
     return this.patientService.update(+id, updatePatientDto, userId);
   }
 
-  @Delete(':id')
+  @Delete('manage/:id')
+  @Roles(Role.ADMIN)
   remove(@Param('id') id: string) {
     return this.patientService.remove(+id);
   }

@@ -187,7 +187,18 @@ export class PatientService {
     };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} patient`;
+  async remove(id: number) {
+    const patient = await this.patientRepository.findOne({ where: { id } });
+    if (!patient) {
+      throw new NotFoundException('Patient not found');
+    }
+    patient.updateHistory = [];
+    await this.patientRepository.save(patient);
+    await this.patientRepository.delete(id);
+
+    return {
+      status: HttpStatus.OK,
+      message: 'Patient deleted successfully',
+    };
   }
 }

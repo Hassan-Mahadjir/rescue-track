@@ -11,6 +11,7 @@ import dbConfig from './config/db.config';
 import dbConfigProduction from './config/db.config.production';
 import { DevtoolsModule } from '@nestjs/devtools-integration';
 import { PatientModule } from './patient/patient.module';
+import { PatientCareReportModule } from './patient-care-report/patient-care-report.module';
 
 @Module({
   controllers: [AppController],
@@ -33,6 +34,7 @@ import { PatientModule } from './patient/patient.module';
     MailModule,
     ProfileModule,
     PatientModule,
+    PatientCareReportModule,
   ],
 })
 export class AppModule {}
