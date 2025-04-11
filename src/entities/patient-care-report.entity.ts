@@ -9,6 +9,7 @@ import {
 import { Patient } from './patient.entity';
 import { PatientUpdateHistory } from './patientUpdateHistory.entity';
 import { Treatment } from './treatment.entity';
+import { User } from './user.entity';
 
 @Entity()
 export class PatientCareReport {
@@ -30,7 +31,12 @@ export class PatientCareReport {
   )
   updateHistory: PatientUpdateHistory[];
 
-  //   Relationship with Treatment
+  //Relationship with Treatment
   @OneToMany(() => Treatment, (treatment) => treatment.PCR, { cascade: true })
   treatments: Treatment[];
+
+  // Relationship with USER(Who generated the report)
+  @ManyToOne(() => User, (user) => user.PCRs)
+  @JoinColumn()
+  initiatedBy: User;
 }

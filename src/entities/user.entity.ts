@@ -13,6 +13,7 @@ import * as argon2 from 'argon2';
 import { Role } from 'src/auth/enums/role.enums';
 import { Profile } from './profile.entity';
 import { Patient } from './patient.entity';
+import { PatientCareReport } from './patient-care-report.entity';
 
 @Entity()
 export class User {
@@ -51,6 +52,10 @@ export class User {
   // Relationship with PATIENT UPDATE HISTORY
   @OneToMany(() => Patient, (patient) => patient.updateHistory)
   updateHistory: Patient[];
+
+  // Relationship with PCR(Pateint Care Report)
+  @OneToMany(() => PatientCareReport, (PCR) => PCR.initiatedBy)
+  PCRs: PatientCareReport;
 
   @BeforeInsert()
   async hashPassword() {

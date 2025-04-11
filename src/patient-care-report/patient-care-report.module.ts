@@ -8,6 +8,7 @@ import { Treatment } from 'src/entities/treatment.entity';
 import { Profile } from 'src/entities/profile.entity';
 import { UserService } from 'src/user/user.service';
 import { Patient } from 'src/entities/patient.entity';
+import { PatientUpdateHistory } from 'src/entities/patientUpdateHistory.entity';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { Patient } from 'src/entities/patient.entity';
       Treatment,
       Profile,
       Patient,
+      PatientUpdateHistory,
     ]),
   ],
   controllers: [PatientCareReportController],

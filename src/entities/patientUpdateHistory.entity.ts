@@ -28,7 +28,9 @@ export class PatientUpdateHistory {
 
   // Relationship with User
   // This is the user who made the update
-  @ManyToOne(() => User, (user) => user.updateHistory)
+  @ManyToOne(() => User, (user) => user.updateHistory, {
+    nullable: false,
+  })
   @JoinColumn()
   updatedBy: User;
 
@@ -36,6 +38,7 @@ export class PatientUpdateHistory {
   @ManyToOne(
     () => PatientCareReport,
     (patientCareReport) => patientCareReport.updateHistory,
+    { onDelete: 'CASCADE' },
   )
   @JoinColumn()
   patientCareReport: PatientCareReport;
