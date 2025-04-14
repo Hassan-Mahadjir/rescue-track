@@ -179,19 +179,27 @@ export class PatientCareReportService {
   }
 
   async remove(id: number) {
-    const report = await this.PCRRepository.findOne({ where: { id } });
+    const report = await this.PCRRepository.findOne({
+      where: { id },
+      relations: ['treatments', 'updateHistory'], // make sure to load related entities
+    });
 
     if (!report) {
-      throw new NotFoundException(
-        `Patient care report with id ${id} not found`,
-      );
+      throw new NotFoundException(`PatientCareReport with id ${id} not found`);
     }
 
+    if (report.updateHistory?.length > 0) {
+      await this.updateHistoryRepository.remove(report.updateHistory);
+    }
+
+    if (report.treatments.length > 0) {
+      await this.treatmentRepository.remove(report.treatments);
+    }
     await this.PCRRepository.remove(report);
 
     return {
-      status: HttpStatus.OK,
-      message: `Patient care report with id ${id} has been removed successfully`,
+      statusCode: HttpStatus.OK,
+      message: `PatientCareReport with id ${id} has been successfully removed`,
     };
   }
 }
