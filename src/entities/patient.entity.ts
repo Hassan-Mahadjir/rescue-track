@@ -11,8 +11,10 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from './user.entity';
-import { PatientUpdateHistory } from './patientUpdateHistory.entity';
 import { PatientCareReport } from './patient-care-report.entity';
+import { Eligibility } from 'src/enums/eligibility.enum';
+import { RunReport } from './run-report.entity';
+import { UpdateHistory } from './updateHistory.entity';
 
 @Entity()
 export class Patient {
@@ -40,6 +42,9 @@ export class Patient {
   @Column({ nullable: true })
   dateofBirth: Date;
 
+  @Column({ nullable: true, type: 'enum', enum: Eligibility })
+  eligibility: string;
+
   @Column({ nullable: true, type: 'enum', enum: Nationality })
   nationality: Nationality;
 
@@ -64,10 +69,14 @@ export class Patient {
   responsible: User;
 
   // Relationship with PatientUpdateHistory
-  @OneToMany(() => PatientUpdateHistory, (history) => history.patient)
-  updateHistory: PatientUpdateHistory[];
+  @OneToMany(() => UpdateHistory, (history) => history.patient)
+  updateHistory: UpdateHistory[];
 
   // Relationship with PatientCareReport
   @OneToMany(() => PatientCareReport, (report) => report.patient)
   patientCareReport: PatientCareReport[];
+
+  // Relationship with PatientCareReport
+  @OneToMany(() => RunReport, (report) => report.patient)
+  patientRunReport: RunReport[];
 }

@@ -6,12 +6,10 @@ import { Patient } from 'src/entities/patient.entity';
 import { User } from 'src/entities/user.entity';
 import { Profile } from 'src/entities/profile.entity';
 import { UserService } from 'src/user/user.service';
-import { PatientUpdateHistory } from 'src/entities/patientUpdateHistory.entity';
+import { UpdateHistory } from 'src/entities/updateHistory.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Patient, User, Profile, PatientUpdateHistory]),
-  ],
+  imports: [TypeOrmModule.forFeature([Patient, User, Profile, UpdateHistory])],
   controllers: [PatientController],
   providers: [PatientService, UserService],
   exports: [PatientService],

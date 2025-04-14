@@ -9,9 +9,10 @@ import {
 import { Patient } from './patient.entity';
 import { User } from './user.entity';
 import { PatientCareReport } from './patient-care-report.entity';
+import { RunReport } from './run-report.entity';
 
 @Entity()
-export class PatientUpdateHistory {
+export class UpdateHistory {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -42,4 +43,9 @@ export class PatientUpdateHistory {
   )
   @JoinColumn()
   patientCareReport: PatientCareReport;
+
+  // Relationship with run Report
+  @ManyToOne(() => RunReport, (report) => report.updateHistory)
+  @JoinColumn()
+  runReport: RunReport;
 }

@@ -14,6 +14,7 @@ import { Role } from 'src/auth/enums/role.enums';
 import { Profile } from './profile.entity';
 import { Patient } from './patient.entity';
 import { PatientCareReport } from './patient-care-report.entity';
+import { RunReport } from './run-report.entity';
 
 @Entity()
 export class User {
@@ -56,6 +57,10 @@ export class User {
   // Relationship with PCR(Pateint Care Report)
   @OneToMany(() => PatientCareReport, (PCR) => PCR.initiatedBy)
   PCRs: PatientCareReport;
+
+  // Relationship with Run Report
+  @OneToMany(() => RunReport, (run) => run.initiatedBy)
+  runReports: RunReport;
 
   @BeforeInsert()
   async hashPassword() {

@@ -8,7 +8,7 @@ import { Treatment } from 'src/entities/treatment.entity';
 import { UserService } from 'src/user/user.service';
 import { Patient } from 'src/entities/patient.entity';
 import { LessThan, MoreThan } from 'typeorm';
-import { PatientUpdateHistory } from 'src/entities/patientUpdateHistory.entity';
+import { UpdateHistory } from 'src/entities/updateHistory.entity';
 
 @Injectable()
 export class PatientCareReportService {
@@ -19,8 +19,8 @@ export class PatientCareReportService {
     private treatmentRepository: Repository<Treatment>,
     private userService: UserService,
     @InjectRepository(Patient) private patientRepository: Repository<Patient>,
-    @InjectRepository(PatientUpdateHistory)
-    private updateHistoryRepository: Repository<PatientUpdateHistory>,
+    @InjectRepository(UpdateHistory)
+    private updateHistoryRepository: Repository<UpdateHistory>,
   ) {}
   async create(
     initiatedPersonId: number,

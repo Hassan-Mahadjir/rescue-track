@@ -14,14 +14,14 @@ import { Gender } from 'src/enums/gender.enums';
 import { Nationality } from 'src/enums/nationality.enums';
 import { Status } from 'src/enums/status.enums';
 import { UserService } from 'src/user/user.service';
-import { PatientUpdateHistory } from 'src/entities/patientUpdateHistory.entity';
+import { UpdateHistory } from 'src/entities/updateHistory.entity';
 
 @Injectable()
 export class PatientService {
   constructor(
     @InjectRepository(Patient) private patientRepository: Repository<Patient>,
-    @InjectRepository(PatientUpdateHistory)
-    private patientUpdateHistoryRepository: Repository<PatientUpdateHistory>,
+    @InjectRepository(UpdateHistory)
+    private patientUpdateHistoryRepository: Repository<UpdateHistory>,
     private userService: UserService,
   ) {}
   async create(responsibleID: number, createPatientDto: CreatePatientDto) {
