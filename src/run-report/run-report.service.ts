@@ -1,39 +1,221 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateRunReportDto } from './dto/create-run-report.dto';
 import { UpdateRunReportDto } from './dto/update-run-report.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RunReport } from 'src/entities/run-report.entity';
-import { Repository } from 'typeorm';
+import { MoreThan, Repository } from 'typeorm';
 import { UserService } from 'src/user/user.service';
 import { UpdateHistory } from 'src/entities/updateHistory.entity';
+import { PatientCareReport } from 'src/entities/patient-care-report.entity';
+import { Patient } from 'src/entities/patient.entity';
 
 @Injectable()
 export class RunReportService {
   constructor(
     @InjectRepository(RunReport)
-    private RunReportRepository: Repository<RunReport>,
+    private runReportRepository: Repository<RunReport>,
     private userService: UserService,
     @InjectRepository(UpdateHistory)
     private updateHistoryRepository: Repository<UpdateHistory>,
+    @InjectRepository(PatientCareReport)
+    private PCRRepository: Repository<PatientCareReport>,
+    @InjectRepository(Patient) private patientRepository: Repository<Patient>,
   ) {}
 
-  create(createRunReportDto: CreateRunReportDto) {
-    return 'This action adds a new runReport';
+  async create(
+    initiatedPersonId: number,
+    createRunReportDto: CreateRunReportDto,
+  ) {
+    const initiatedPerson = await this.userService.findOne(initiatedPersonId);
+    const patient = await this.patientRepository.findOne({
+      where: { id: createRunReportDto.patientId },
+    });
+
+    if (!patient)
+      throw new NotFoundException(
+        `Patient with ${createRunReportDto.patientId} not found`,
+      );
+
+    const newRunReport = this.runReportRepository.create({
+      ...createRunReportDto,
+      patient: patient,
+      initiatedBy: initiatedPerson,
+    });
+
+    const savedRunReport = await this.runReportRepository.save(newRunReport);
+
+    return {
+      status: HttpStatus.CREATED,
+      message: `Run report created successfully`,
+      data: savedRunReport,
+    };
   }
 
-  findAll() {
-    return `This action returns all runReport`;
+  async findAll() {
+    const reports = await this.runReportRepository.find({
+      relations: [
+        'initiatedBy.profile',
+        'patient',
+        'updateHistory',
+        'patient.patientCareReport',
+        'patient.patientCareReport.treatments',
+      ],
+    });
+    return {
+      status: HttpStatus.FOUND,
+      message: `${reports.length} Run reports fetched successfully`,
+      date: reports,
+    };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} runReport`;
+  async findOne(id: number) {
+    const report = await this.runReportRepository.findOne({
+      where: { id: id },
+      relations: [
+        'initiatedBy.profile',
+        'patient',
+        'updateHistory',
+        'patient.patientCareReport',
+        'patient.patientCareReport.treatments',
+      ],
+    });
+
+    if (!report)
+      throw new NotFoundException(`Report with ${id} was not found.`);
+
+    return {
+      status: HttpStatus.FOUND,
+      message: 'Run report found successfully',
+      data: report,
+    };
   }
 
-  update(id: number, updateRunReportDto: UpdateRunReportDto) {
-    return `This action updates a #${id} runReport`;
+  async getReportFromLast24Hours(id: number, userId: number) {
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const report = await this.runReportRepository.findOne({
+      where: {
+        id: id,
+        createAt: MoreThan(twentyFourHoursAgo),
+        initiatedBy: { id: userId },
+      },
+      relations: [
+        'patient',
+        'updateHistory',
+        'patient.patientCareReport',
+        'patient.patientCareReport.treatments',
+      ],
+    });
+
+    if (!report)
+      throw new NotFoundException(`No matching report found or access denied`);
+
+    return {
+      status: HttpStatus.FOUND,
+      message: 'Run report found successfully.',
+      data: report,
+    };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} runReport`;
+  async getReportsFromLast24Hours(initiatedByID: number) {
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const createdByUser = await this.userService.findOne(initiatedByID);
+
+    const runReports = await this.runReportRepository.find({
+      where: {
+        initiatedBy: createdByUser,
+        createAt: MoreThan(twentyFourHoursAgo),
+      },
+      relations: [
+        'patient',
+        'updateHistory',
+        'patient.patientCareReport',
+        'patient.patientCareReport.treatments',
+      ],
+    });
+
+    if (!runReports)
+      throw new NotFoundException(`No reports found in the last 24 hours`);
+
+    return {
+      status: HttpStatus.FOUND,
+      message: `${runReports.length} run reports found successfully.`,
+      data: runReports,
+    };
+  }
+
+  async update(id: number, updateRunReportDto: UpdateRunReportDto) {
+    const report = await this.runReportRepository.findOne({
+      where: { id: id },
+      relations: [
+        'patient',
+        'updateHistory',
+        'patient.patientCareReport',
+        'patient.patientCareReport.treatments',
+        'initiatedBy',
+      ],
+    });
+
+    if (!report)
+      throw new NotFoundException(`Run report with id ${id} not found`);
+
+    // Optional: Update patient if patientId provided
+    if (updateRunReportDto.patientId) {
+      const patient = await this.patientRepository.findOne({
+        where: { id: updateRunReportDto.patientId },
+      });
+
+      if (!patient) {
+        throw new NotFoundException(
+          `Patient with id ${updateRunReportDto.patientId} not found`,
+        );
+      }
+      report.patient = patient;
+    }
+
+    const updatedReport = await this.runReportRepository.save(report);
+
+    const updateBy = await this.userService.findOne(report.initiatedBy.id);
+
+    const history = this.updateHistoryRepository.create({
+      updatedBy: updateBy,
+      runReport: report,
+      updateFields: updateRunReportDto,
+    });
+
+    const savedUpdate = await this.updateHistoryRepository.save(history);
+
+    return {
+      status: HttpStatus.OK,
+      message: 'Run report updated successfully',
+      data: savedUpdate,
+    };
+  }
+
+  async remove(id: number) {
+    const report = await this.runReportRepository.findOne({
+      where: { id: id },
+      relations: [
+        'patient',
+        'updateHistory',
+        'patient.patientCareReport',
+        'patient.patientCareReport.treatments',
+        'initiatedBy',
+      ],
+    });
+
+    if (!report) {
+      throw new NotFoundException(`run report with id ${id} not found`);
+    }
+
+    if (report.updateHistory.length > 0) {
+      await this.updateHistoryRepository.remove(report.updateHistory);
+    }
+
+    await this.runReportRepository.remove(report);
+
+    return {
+      status: HttpStatus.OK,
+      message: `Run with id ${id} has been successfully removed`,
+    };
   }
 }

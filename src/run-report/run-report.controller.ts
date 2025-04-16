@@ -1,33 +1,70 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Req,
+  BadRequestException,
+} from '@nestjs/common';
 import { RunReportService } from './run-report.service';
 import { CreateRunReportDto } from './dto/create-run-report.dto';
 import { UpdateRunReportDto } from './dto/update-run-report.dto';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { Role } from 'src/auth/enums/role.enums';
 
 @Controller('run-report')
 export class RunReportController {
   constructor(private readonly runReportService: RunReportService) {}
 
   @Post()
-  create(@Body() createRunReportDto: CreateRunReportDto) {
-    return this.runReportService.create(createRunReportDto);
+  create(@Body() createRunReportDto: CreateRunReportDto, @Req() req) {
+    const userId = Number(req.user.id);
+    if (isNaN(userId)) throw new BadRequestException('Invalid user id');
+
+    return this.runReportService.create(userId, createRunReportDto);
   }
 
-  @Get()
+  @Get('/manage')
+  @Roles(Role.ADMIN)
   findAll() {
     return this.runReportService.findAll();
   }
 
-  @Get(':id')
+  @Get('/manage/:id')
+  @Roles(Role.ADMIN)
   findOne(@Param('id') id: string) {
     return this.runReportService.findOne(+id);
   }
 
+  @Get(':id')
+  getReportLast24Hours(@Param('id') id: string, @Req() req) {
+    const userId = Number(req.user.id);
+    if (isNaN(userId)) throw new BadRequestException('Invalid user id');
+
+    return this.runReportService.getReportFromLast24Hours(+id, userId);
+  }
+
+  @Get()
+  getReportsLast24Hours(@Req() req) {
+    const userId = Number(req.user.id);
+    if (isNaN(userId)) throw new BadRequestException('Invalid user id');
+
+    return this.runReportService.getReportsFromLast24Hours(userId);
+  }
+
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRunReportDto: UpdateRunReportDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateRunReportDto: UpdateRunReportDto,
+  ) {
     return this.runReportService.update(+id, updateRunReportDto);
   }
 
-  @Delete(':id')
+  @Delete('/manage/:id')
+  @Roles(Role.ADMIN)
   remove(@Param('id') id: string) {
     return this.runReportService.remove(+id);
   }

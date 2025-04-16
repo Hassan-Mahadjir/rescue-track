@@ -45,7 +45,7 @@ export class RunReport {
   @Column({ type: 'float', nullable: true })
   mileage: number;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'timestamp', nullable: true })
   responseTime: Date;
 
   @Column({ type: 'timestamp' })
@@ -74,5 +74,5 @@ export class RunReport {
   patient: Patient;
 
   @OneToMany(() => UpdateHistory, (history) => history.runReport)
-  updateHistory: UpdateHistory;
+  updateHistory: UpdateHistory[];
 }
