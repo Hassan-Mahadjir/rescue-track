@@ -5,6 +5,7 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Patient } from './patient.entity';
@@ -12,6 +13,7 @@ import { Treatment } from './treatment.entity';
 import { User } from './user.entity';
 import { Condition } from 'src/enums/condition.enums';
 import { UpdateHistory } from './updateHistory.entity';
+import { RunReport } from './run-report.entity';
 
 @Entity()
 export class PatientCareReport {
@@ -50,4 +52,10 @@ export class PatientCareReport {
   @ManyToOne(() => User, (user) => user.PCRs)
   @JoinColumn()
   initiatedBy: User;
+
+  // Relationship with Run-Report
+  @OneToOne(() => RunReport, (runReport) => runReport.patientCareReport, {
+    nullable: false,
+  })
+  runReport: RunReport;
 }

@@ -9,11 +9,13 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from './user.entity';
 import { Patient } from './patient.entity';
 import { UpdateHistory } from './updateHistory.entity';
+import { PatientCareReport } from './patient-care-report.entity';
 
 @Entity()
 export class RunReport {
@@ -75,4 +77,9 @@ export class RunReport {
 
   @OneToMany(() => UpdateHistory, (history) => history.runReport)
   updateHistory: UpdateHistory[];
+
+  // Relationship with PCR
+  @OneToOne(() => PatientCareReport, (PCR) => PCR)
+  @JoinColumn()
+  patientCareReport: PatientCareReport;
 }

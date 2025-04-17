@@ -1,4 +1,9 @@
-import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreatePatientCareReportDto } from './dto/create-patient-care-report.dto';
 import { UpdatePatientCareReportDto } from './dto/update-patient-care-report.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -9,6 +14,8 @@ import { UserService } from 'src/user/user.service';
 import { Patient } from 'src/entities/patient.entity';
 import { LessThan, MoreThan } from 'typeorm';
 import { UpdateHistory } from 'src/entities/updateHistory.entity';
+import { RunReport } from 'src/entities/run-report.entity';
+import { run } from 'node:test';
 
 @Injectable()
 export class PatientCareReportService {
@@ -21,20 +28,48 @@ export class PatientCareReportService {
     @InjectRepository(Patient) private patientRepository: Repository<Patient>,
     @InjectRepository(UpdateHistory)
     private updateHistoryRepository: Repository<UpdateHistory>,
+    @InjectRepository(RunReport)
+    private runReportRepository: Repository<RunReport>,
   ) {}
   async create(
     initiatedPersonId: number,
     createPatientCareReportDto: CreatePatientCareReportDto,
   ) {
     const initiatedPerson = await this.userService.findOne(initiatedPersonId);
-    const patient = await this.patientRepository.findOne({
-      where: { id: createPatientCareReportDto.patientId },
+
+    const runReport = await this.runReportRepository.findOne({
+      where: { id: createPatientCareReportDto.runReportId },
+      relations: ['patient', 'patientCareReport'],
     });
 
-    if (!patient)
+    if (!runReport) {
       throw new NotFoundException(
-        `Patient with ${createPatientCareReportDto.patientId} not found`,
+        `No report found with ID ${createPatientCareReportDto.runReportId}`,
       );
+    }
+
+    // ✅ Check if this runReport already has a PCR
+    if (runReport.patientCareReport) {
+      throw new BadRequestException(
+        `This run report already has an associated patient care report.`,
+      );
+    }
+
+    const patient = await this.patientRepository.findOne({
+      where: { id: runReport.patient.id },
+    });
+
+    if (!patient) {
+      throw new NotFoundException(
+        `Patient with ID ${createPatientCareReportDto.patientId} not found`,
+      );
+    }
+
+    if (runReport.patient.id !== patient.id) {
+      throw new BadRequestException(
+        `The run report is not associated with patient ID ${patient.id}`,
+      );
+    }
 
     const newPCR = this.PCRRepository.create({
       patient,
@@ -42,7 +77,9 @@ export class PatientCareReportService {
         this.treatmentRepository.create(t),
       ),
       initiatedBy: initiatedPerson,
+      runReport,
     });
+
     const savedPCR = await this.PCRRepository.save(newPCR);
 
     return {

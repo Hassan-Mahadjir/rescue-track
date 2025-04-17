@@ -3,6 +3,7 @@ import {
   IsArray,
   IsEnum,
   IsNumber,
+  IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
@@ -11,18 +12,25 @@ import { Condition } from 'src/enums/condition.enums';
 
 export class CreatePatientCareReportDto {
   @IsNumber()
+  @IsOptional()
   patientId: number;
+
+  @IsNumber()
+  runReportId: number;
 
   @IsEnum(Condition)
   patientCondition: Condition;
 
   @IsString()
+  @IsOptional()
   initialCondition: string;
 
   @IsString()
+  @IsOptional()
   primarySymptoms: string;
 
   @IsString()
+  @IsOptional()
   notes: string;
 
   @IsArray()
