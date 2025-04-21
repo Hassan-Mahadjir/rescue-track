@@ -3,9 +3,11 @@ import { CreateUserDto } from './create-user.dto';
 import { Role } from 'src/auth/enums/role.enums';
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {
-  resetCodeExpiry?: Date;
+  otpCodeExpiry?: Date;
 
-  resetCode?: string;
+  otp?: string;
 
   role?: Role;
+
+  isVerified?: boolean;
 }

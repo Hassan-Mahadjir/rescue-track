@@ -37,10 +37,13 @@ export class User {
   hashedRefreshToken: string | null;
 
   @Column({ nullable: true })
-  resetCode: string;
+  otp: string;
 
   @Column({ nullable: true })
-  resetCodeExpiry: Date;
+  otpCodeExpiry: Date;
+
+  @Column({ default: false })
+  isVerified: boolean;
 
   // Relationship with PROFILE
   @OneToOne(() => Profile, (profile) => profile.user)

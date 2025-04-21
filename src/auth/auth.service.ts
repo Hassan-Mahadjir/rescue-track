@@ -1,4 +1,5 @@
 import {
+  HttpStatus,
   Inject,
   Injectable,
   NotFoundException,
@@ -155,12 +156,12 @@ export class AuthService {
       const hashedResetCode = await argon2.hash(restCode);
       const expiryDate = new Date(Date.now() + 2 * 60 * 1000); // 2 minutes expiry time
 
-      user.resetCode = hashedResetCode;
-      user.resetCodeExpiry = expiryDate;
+      user.otp = hashedResetCode;
+      user.otpCodeExpiry = expiryDate;
 
       await this.userService.update(user.id, {
-        resetCode: hashedResetCode,
-        resetCodeExpiry: expiryDate,
+        otp: hashedResetCode,
+        otpCodeExpiry: expiryDate,
       });
 
       this.mailService.sendPasswordResetEmail(email, restCode);
@@ -172,19 +173,24 @@ export class AuthService {
     };
   }
 
-  async validateCode(email: string, resetCode: string) {
+  async validateCode(email: string, otp: string) {
     const user = await this.userService.findByEmail(email);
-    if (!user || !user.resetCode) {
+    if (!user || !user.otp) {
       throw new UnauthorizedException('Invalid reset code.');
     }
 
-    if (user.resetCodeExpiry < new Date()) {
+    if (user.otpCodeExpiry < new Date()) {
       throw new UnauthorizedException('Reset code has expired');
     }
 
-    const isCodeValid = await argon2.verify(user.resetCode, resetCode);
+    const isCodeValid = await argon2.verify(user.otp, otp);
     if (!isCodeValid) throw new UnauthorizedException('Invalid reset code.');
 
-    return { message: 'the reset code is correct.', data: isCodeValid };
+    await this.userService.update(user.id, { isVerified: true });
+    return {
+      status: HttpStatus.OK,
+      message: 'the reset code is correct.',
+      data: isCodeValid,
+    };
   }
 }

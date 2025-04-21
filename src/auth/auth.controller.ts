@@ -126,17 +126,17 @@ export class AuthController {
   }
 
   @Public()
-  @Post('validate-resetCode')
+  @Post('validate-otpCode')
   async validateResetCode(@Body() resetPasswordDto: ResetPasswordDto) {
     if (!resetPasswordDto.email)
       throw new BadRequestException('Email is required');
 
-    if (!resetPasswordDto.resetCode)
+    if (!resetPasswordDto.otp)
       throw new BadRequestException('Reset code is required');
 
     return this.authService.validateCode(
       resetPasswordDto.email,
-      resetPasswordDto.resetCode,
+      resetPasswordDto.otp,
     );
   }
 }
