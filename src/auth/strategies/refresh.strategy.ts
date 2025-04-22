@@ -34,7 +34,7 @@ export class RefreshJwtStrategy extends PassportStrategy(
     if (!refreshToken) {
       throw new UnauthorizedException('Refresh token is missing');
     }
-
+    console.log('Refresh token:', refreshToken);
     return this.authService.validateRefreshToken(userId, refreshToken);
   }
 }

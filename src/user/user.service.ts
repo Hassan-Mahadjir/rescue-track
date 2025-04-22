@@ -23,13 +23,10 @@ export class UserService {
     @InjectRepository(Profile) private profileRepository: Repository<Profile>,
   ) {}
 
-  async updateHashedRefreshToken(
-    userId: number,
-    hashedRefreshToken: string | null,
-  ) {
+  async updateHashedRefreshToken(userId: number, refreshToken: string | null) {
     return await this.UserRepo.update(
       { id: userId },
-      { hashedRefreshToken: hashedRefreshToken },
+      { hashedRefreshToken: refreshToken },
     );
   }
 
@@ -87,7 +84,7 @@ export class UserService {
   async findOne(id: number) {
     const user = await this.UserRepo.findOne({
       where: { id },
-      select: ['id', 'email', 'password', 'role'],
+      select: ['id', 'email', 'password', 'role', 'hashedRefreshToken'],
     });
 
     if (!user) throw new NotFoundException(`User with ${id} not found`);
