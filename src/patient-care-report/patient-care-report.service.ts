@@ -91,20 +91,30 @@ export class PatientCareReportService {
 
   async findAll() {
     const reports = await this.PCRRepository.find({
-      relations: ['treatments', 'initiatedBy', 'initiatedBy.profile'],
+      relations: [
+        'treatments',
+        'initiatedBy',
+        'initiatedBy.profile',
+        'patient',
+      ],
     });
 
     return {
       status: HttpStatus.FOUND,
       message: `${reports.length} Patient care reports fetched successfully`,
-      date: reports,
+      data: reports,
     };
   }
 
   async findOne(id: number) {
     const report = await this.PCRRepository.findOne({
       where: { id: id },
-      relations: ['treatments', 'initiatedBy', 'initiatedBy.profile'],
+      relations: [
+        'treatments',
+        'initiatedBy',
+        'initiatedBy.profile',
+        'patient',
+      ],
     });
 
     if (!report)
