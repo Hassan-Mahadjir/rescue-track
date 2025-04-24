@@ -91,7 +91,12 @@ export class PatientCareReportService {
 
   async findAll() {
     const reports = await this.PCRRepository.find({
-      relations: ['treatments', 'initiatedBy', 'initiatedBy.profile'],
+      relations: [
+        'treatments',
+        'initiatedBy',
+        'initiatedBy.profile',
+        'patient',
+      ],
     });
 
     return {
@@ -104,7 +109,12 @@ export class PatientCareReportService {
   async findOne(id: number) {
     const report = await this.PCRRepository.findOne({
       where: { id: id },
-      relations: ['treatments', 'initiatedBy', 'initiatedBy.profile'],
+      relations: [
+        'treatments',
+        'initiatedBy',
+        'initiatedBy.profile',
+        'patient',
+      ],
     });
 
     if (!report)

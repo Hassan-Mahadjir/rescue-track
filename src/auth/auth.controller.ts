@@ -93,10 +93,13 @@ export class AuthController {
   @Get('microsoft/callback')
   async microsoftCallback(@Req() req, @Res() res) {
     const response = await this.authService.login(req.user.id);
+    const redirectUrl = new URL(
+      'http://192.168.55.144:3001/microsoft-redirect',
+    ); // temporary page
+    redirectUrl.searchParams.set('accessToken', response.data.accessToken);
+    redirectUrl.searchParams.set('refreshToken', response.data.refreshToken);
 
-    res.redirect(
-      `http://localhost:5173?accessToken=${response.data.accessToken}&refreshToken=${response.data.refreshToken}`,
-    );
+    return res.redirect(redirectUrl.toString());
   }
 
   @UseGuards(JwtAuthGuard)

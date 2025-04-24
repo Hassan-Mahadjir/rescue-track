@@ -5,6 +5,8 @@ import { VerifyCallback } from 'passport-oauth2';
 import { ConfigType } from '@nestjs/config';
 import { AuthService } from '../auth.service';
 import microsoftOauthConfig from '../config/microsoft-oauth.config';
+import { Gender } from 'src/enums/gender.enums';
+import { Nationality } from 'src/enums/nationality.enums';
 
 @Injectable()
 export class MicrosoftStrategy extends PassportStrategy(Strategy) {
@@ -38,13 +40,13 @@ export class MicrosoftStrategy extends PassportStrategy(Strategy) {
         // ._JSON.jobTitle is just for testing purpose
         firstName: profile.name.givenName,
         lastName: profile.name.familyName,
-        avatar: profile.photos[0]?.value || '',
-        middleName: profile._json.jobTitle || null,
-        address: profile.address || null,
+        avatar: profile._json.mobilePhone || null,
+        middleName: profile._json.mobilePhone || null,
+        address: profile._json.mobilePhone || null,
         phone: profile._json.mobilePhone || null,
         nationality: profile._json.mobilePhone || null,
-        gender: profile._json.jobTitle || null,
-        dateofBirth: profile._josn.jobTitle || null,
+        gender: profile._json.mobilePhone || null,
+        dateofBirth: profile._json.birthdate || null,
       },
     );
 
