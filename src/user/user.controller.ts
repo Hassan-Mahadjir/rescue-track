@@ -20,6 +20,7 @@ import { Role } from 'src/auth/enums/role.enums';
 import { ProfileService } from 'src/profile/profile.service';
 import { UpdateProfileDto } from 'src/profile/dto/update-profile.dto';
 import { CreateProfileDto } from 'src/profile/dto/create-profile.dto';
+import { Public } from 'src/auth/decorators/public.decorator';
 
 @Controller('user')
 export class UserController {
@@ -62,6 +63,7 @@ export class UserController {
     return this.userService.findAll();
   }
 
+  @Public()
   @Get(':id')
   findOne(@Param('id', ParseIdPipe) id) {
     return this.userService.findOne(id);
