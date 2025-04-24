@@ -76,20 +76,11 @@ export class AuthController {
   @Get('google/callback')
   async googleCallback(@Req() req, @Res() res) {
     const response = await this.authService.login(req.user.id);
+    const redirectUrl = new URL('http://192.168.55.144:3001/google-redirect'); // temporary page
+    redirectUrl.searchParams.set('accessToken', response.data.accessToken);
+    redirectUrl.searchParams.set('refreshToken', response.data.refreshToken);
 
-    res.cookie('accessToken', response.data.accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-    });
-
-    res.cookie('refreshToken', response.data.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-    });
-
-    res.redirect('http://localhost:3001/google-redirect');
+    return res.redirect(redirectUrl.toString());
   }
 
   @Public()
