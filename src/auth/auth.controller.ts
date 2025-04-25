@@ -76,7 +76,9 @@ export class AuthController {
   @Get('google/callback')
   async googleCallback(@Req() req, @Res() res) {
     const response = await this.authService.login(req.user.id);
-    const redirectUrl = new URL('http://192.168.55.144:3001/google-redirect'); // temporary page
+    const redirectUrl = new URL(
+      `${process.env.HOST_IP_ADDRESS}:3001/google-redirect`,
+    ); // temporary page
     redirectUrl.searchParams.set('accessToken', response.data.accessToken);
     redirectUrl.searchParams.set('refreshToken', response.data.refreshToken);
 
@@ -94,7 +96,7 @@ export class AuthController {
   async microsoftCallback(@Req() req, @Res() res) {
     const response = await this.authService.login(req.user.id);
     const redirectUrl = new URL(
-      'http://192.168.55.144:3001/microsoft-redirect',
+      `${process.env.HOST_IP_ADDRESS}:3001/microsoft-redirect`,
     ); // temporary page
     redirectUrl.searchParams.set('accessToken', response.data.accessToken);
     redirectUrl.searchParams.set('refreshToken', response.data.refreshToken);
