@@ -64,7 +64,7 @@ export class RunReportService {
     return {
       status: HttpStatus.FOUND,
       message: `${reports.length} Run reports fetched successfully`,
-      date: reports,
+      data: reports,
     };
   }
 

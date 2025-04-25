@@ -15,7 +15,6 @@ import { Patient } from 'src/entities/patient.entity';
 import { LessThan, MoreThan } from 'typeorm';
 import { UpdateHistory } from 'src/entities/updateHistory.entity';
 import { RunReport } from 'src/entities/run-report.entity';
-import { run } from 'node:test';
 
 @Injectable()
 export class PatientCareReportService {
@@ -136,7 +135,12 @@ export class PatientCareReportService {
         createdAt: MoreThan(twentyFourHoursAgo),
         initiatedBy: { id: userId },
       },
-      relations: ['treatments', 'initiatedBy', 'initiatedBy.profile'],
+      relations: [
+        'treatments',
+        'initiatedBy',
+        'initiatedBy.profile',
+        'patient',
+      ],
     });
     if (!PCR)
       throw new NotFoundException(`No matching report found or access denied`);
@@ -245,7 +249,7 @@ export class PatientCareReportService {
     await this.PCRRepository.remove(report);
 
     return {
-      statusCode: HttpStatus.OK,
+      status: HttpStatus.OK,
       message: `PatientCareReport with id ${id} has been successfully removed`,
     };
   }

@@ -35,9 +35,9 @@ export class ProfileService {
       // Save profile object
       const profile = await this.profileRepository.save(newProfile);
       return {
-        statusCode: HttpStatus.CREATED,
+        status: HttpStatus.CREATED,
         message: 'Profile created successfully',
-        profile,
+        data: profile,
       };
     } catch (error) {
       throw new HttpException(
@@ -63,7 +63,7 @@ export class ProfileService {
     }
 
     return {
-      statusCode: HttpStatus.OK,
+      status: HttpStatus.OK,
       message: 'Profile fetched successfully.',
       data: userProfile,
     };
@@ -84,7 +84,7 @@ export class ProfileService {
     });
 
     return {
-      statusCode: HttpStatus.OK,
+      status: HttpStatus.OK,
       message: 'Profile updated successfully',
       data: updatedProfile,
     };
@@ -93,7 +93,7 @@ export class ProfileService {
   remove(id: number) {
     const deleteResult = this.profileRepository.delete({ user: { id } });
     return {
-      statusCode: HttpStatus.OK,
+      status: HttpStatus.OK,
       message: 'Profile deleted successfully',
     };
   }

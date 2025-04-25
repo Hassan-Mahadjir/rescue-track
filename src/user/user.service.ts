@@ -48,7 +48,7 @@ export class UserService {
       await this.createProfile(user.id, createProfileDto);
     }
     return {
-      statusCode: HttpStatus.CREATED,
+      status: HttpStatus.CREATED,
       message: 'User created successfully',
       data: user,
     };
@@ -67,7 +67,7 @@ export class UserService {
     // Save profile object
     const profile = await this.profileRepository.save(newProfile);
     return {
-      statusCode: HttpStatus.CREATED,
+      status: HttpStatus.CREATED,
       message: 'Profile created successfully',
       data: profile,
     };
@@ -121,7 +121,7 @@ export class UserService {
 
     if (!staff) throw new NotFoundException('No staff found');
     return {
-      statusCode: HttpStatus.OK,
+      status: HttpStatus.OK,
       message: `${staff.length} - Staff fetched successfully`,
       data: staff,
     };

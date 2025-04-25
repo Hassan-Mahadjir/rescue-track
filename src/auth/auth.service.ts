@@ -49,6 +49,7 @@ export class AuthService {
     await this.userService.updateHashedRefreshToken(userId, hashedRefreshToken);
 
     return {
+      status: HttpStatus.OK,
       message: 'Login Successfully.',
       data: { id: userId, accessToken, refreshToken },
     };
@@ -146,7 +147,10 @@ export class AuthService {
 
     await this.userService.update(user.id, { password: newHashedPassword });
 
-    return { message: 'Password has been successfully reset.' };
+    return {
+      status: HttpStatus.OK,
+      message: 'Password has been successfully reset.',
+    };
   }
 
   async sendCodeEmail(email: string) {
@@ -170,6 +174,7 @@ export class AuthService {
       this.mailService.sendPasswordResetEmail(email, restCode);
     }
     return {
+      status: HttpStatus.OK,
       message:
         'If the this user exists, they will receive an email to reset the password.',
       data: `Check your email.`,
