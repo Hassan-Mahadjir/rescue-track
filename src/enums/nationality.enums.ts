@@ -1,4 +1,4 @@
 export enum Nationality {
-  CHAD = 'Chad',
-  KSA = 'KSA',
+  CHAD = 'CD',
+  KSA = 'SA',
 }
