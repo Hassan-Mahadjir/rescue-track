@@ -15,6 +15,8 @@ import { Patient } from 'src/entities/patient.entity';
 import { LessThan, MoreThan } from 'typeorm';
 import { UpdateHistory } from 'src/entities/updateHistory.entity';
 import { RunReport } from 'src/entities/run-report.entity';
+import { TreatmentDto } from './dto/create-treatement.dto';
+import { UpdateTreatmentDto } from './dto/update-treatement.dto';
 
 @Injectable()
 export class PatientCareReportService {
@@ -251,6 +253,65 @@ export class PatientCareReportService {
     return {
       status: HttpStatus.OK,
       message: `PatientCareReport with id ${id} has been successfully removed`,
+    };
+  }
+
+  async addTreatmentToReport(
+    reportId: number,
+    createTreatmentDto: TreatmentDto,
+  ) {
+    const report = await this.PCRRepository.findOne({
+      where: { id: reportId },
+      relations: ['treatments'],
+    });
+
+    if (!report)
+      throw new NotFoundException(`Report with id ${reportId} not found`);
+
+    const newTreatments = createTreatmentDto.map((treatment) =>
+      this.treatmentRepository.create(treatment),
+    );
+
+    report.treatments.push(...newTreatments);
+
+    await this.PCRRepository.save(report);
+
+    return {
+      status: HttpStatus.CREATED,
+      message: 'Treatment added to report successfully',
+      data: newTreatments,
+    };
+  }
+
+  async updateTreatmentFromReport(
+    treatmentId: number,
+    updateTreatmentDto: UpdateTreatmentDto,
+  ) {
+    const treatment = await this.treatmentRepository.findOne({
+      where: { id: treatmentId },
+      relations: ['PCR'],
+    });
+
+    if (!treatment) {
+      throw new NotFoundException(`Treatment with id ${treatmentId} not found`);
+    }
+
+    Object.assign(treatment, updateTreatmentDto);
+    const updatedTreatment = await this.treatmentRepository.save(treatment);
+
+    return {
+      status: HttpStatus.OK,
+      message: 'Treatment updated successfully',
+      data: updatedTreatment,
+    };
+  }
+
+  async removeTreatmentFromReport(treatmentId: number) {
+    await this.treatmentRepository.delete(treatmentId);
+
+    return {
+      status: HttpStatus.OK,
+      message: 'Treatment removed successfully',
     };
   }
 }

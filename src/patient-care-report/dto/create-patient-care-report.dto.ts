@@ -1,13 +1,12 @@
 import { Type } from 'class-transformer';
 import {
-  IsArray,
   IsEnum,
   IsNumber,
   IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { TreatmentDto } from './create-treatement.dto';
+import { Treatment, TreatmentDto } from './create-treatement.dto';
 import { Condition } from 'src/enums/condition.enums';
 
 export class CreatePatientCareReportDto {
@@ -33,8 +32,7 @@ export class CreatePatientCareReportDto {
   @IsOptional()
   notes: string;
 
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => TreatmentDto)
-  treatments: TreatmentDto[];
+  @ValidateNested()
+  @Type(() => Treatment)
+  treatments: TreatmentDto;
 }
