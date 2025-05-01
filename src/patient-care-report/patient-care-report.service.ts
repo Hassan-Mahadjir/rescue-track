@@ -15,8 +15,8 @@ import { Patient } from 'src/entities/patient.entity';
 import { LessThan, MoreThan } from 'typeorm';
 import { UpdateHistory } from 'src/entities/updateHistory.entity';
 import { RunReport } from 'src/entities/run-report.entity';
-import { TreatmentDto } from './dto/create-treatement.dto';
 import { UpdateTreatmentDto } from './dto/update-treatement.dto';
+import { Treatment as TreatmentDto } from './dto/create-treatement.dto';
 
 @Injectable()
 export class PatientCareReportService {
@@ -268,18 +268,16 @@ export class PatientCareReportService {
     if (!report)
       throw new NotFoundException(`Report with id ${reportId} not found`);
 
-    const newTreatments = createTreatmentDto.map((treatment) =>
-      this.treatmentRepository.create(treatment),
-    );
+    const newTreatment = this.treatmentRepository.create(createTreatmentDto);
 
-    report.treatments.push(...newTreatments);
+    report.treatments.push(newTreatment);
 
     await this.PCRRepository.save(report);
 
     return {
       status: HttpStatus.CREATED,
       message: 'Treatment added to report successfully',
-      data: newTreatments,
+      data: newTreatment,
     };
   }
 

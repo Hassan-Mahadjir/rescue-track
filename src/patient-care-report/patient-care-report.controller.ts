@@ -16,7 +16,7 @@ import { UpdatePatientCareReportDto } from './dto/update-patient-care-report.dto
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enums';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth/jwt-auth.guard';
-import { TreatmentDto } from './dto/create-treatement.dto';
+import { Treatment, TreatmentDto } from './dto/create-treatement.dto';
 import { UpdateTreatmentDto } from './dto/update-treatement.dto';
 
 @Controller('patient-care-report')
@@ -87,7 +87,7 @@ export class PatientCareReportController {
   @Post('/treatment/:id')
   addTreatmentToReport(
     @Param('id') reportId: string,
-    @Body() createTreatmentDto: TreatmentDto,
+    @Body() createTreatmentDto: Treatment,
   ) {
     return this.patientCareReportService.addTreatmentToReport(
       +reportId,
