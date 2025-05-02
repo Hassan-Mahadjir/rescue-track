@@ -8,6 +8,8 @@ import {
 } from 'class-validator';
 import { Treatment, TreatmentDto } from './create-treatement.dto';
 import { Condition } from 'src/enums/condition.enums';
+import { CreateMedicalConditionDto } from './create-medical-condition.dto';
+import { CreateAllergyDto } from './create-allergy.dto';
 
 export class CreatePatientCareReportDto {
   @IsNumber()
@@ -22,11 +24,11 @@ export class CreatePatientCareReportDto {
 
   @IsString()
   @IsOptional()
-  initialCondition: string;
+  primaryAssessment: string;
 
   @IsString()
   @IsOptional()
-  primarySymptoms: string;
+  secondaryAssessment: string;
 
   @IsString()
   @IsOptional()
@@ -35,4 +37,12 @@ export class CreatePatientCareReportDto {
   @ValidateNested()
   @Type(() => Treatment)
   treatments: TreatmentDto;
+
+  @ValidateNested()
+  @Type(() => CreateMedicalConditionDto)
+  medicalConditions: CreateMedicalConditionDto[];
+
+  @ValidateNested()
+  @Type(() => CreateAllergyDto)
+  allergies: CreateAllergyDto[];
 }

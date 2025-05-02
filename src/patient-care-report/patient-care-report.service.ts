@@ -17,6 +17,8 @@ import { UpdateHistory } from 'src/entities/updateHistory.entity';
 import { RunReport } from 'src/entities/run-report.entity';
 import { UpdateTreatmentDto } from './dto/update-treatement.dto';
 import { Treatment as TreatmentDto } from './dto/create-treatement.dto';
+import { MedicalCondition } from 'src/entities/medical-condition.entity';
+import { Allergy } from 'src/entities/allergy.entity';
 
 @Injectable()
 export class PatientCareReportService {
@@ -31,6 +33,10 @@ export class PatientCareReportService {
     private updateHistoryRepository: Repository<UpdateHistory>,
     @InjectRepository(RunReport)
     private runReportRepository: Repository<RunReport>,
+    @InjectRepository(MedicalCondition)
+    private medicalConditionRepository: Repository<MedicalCondition>,
+    @InjectRepository(Allergy)
+    private allergyRepository: Repository<Allergy>,
   ) {}
   async create(
     initiatedPersonId: number,
@@ -73,9 +79,16 @@ export class PatientCareReportService {
     }
 
     const newPCR = this.PCRRepository.create({
+      ...createPatientCareReportDto,
       patient,
       treatments: createPatientCareReportDto.treatments.map((t) =>
         this.treatmentRepository.create(t),
+      ),
+      medicalConditions: createPatientCareReportDto.medicalConditions.map((m) =>
+        this.medicalConditionRepository.create(m),
+      ),
+      allergies: createPatientCareReportDto.allergies.map((a) =>
+        this.allergyRepository.create(a),
       ),
       initiatedBy: initiatedPerson,
       runReport,

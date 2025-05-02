@@ -10,7 +10,8 @@ import { UserService } from 'src/user/user.service';
 import { Patient } from 'src/entities/patient.entity';
 import { UpdateHistory } from 'src/entities/updateHistory.entity';
 import { RunReport } from 'src/entities/run-report.entity';
-
+import { MedicalCondition } from 'src/entities/medical-condition.entity';
+import { Allergy } from 'src/entities/allergy.entity';
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -21,6 +22,8 @@ import { RunReport } from 'src/entities/run-report.entity';
       Patient,
       UpdateHistory,
       RunReport,
+      MedicalCondition,
+      Allergy,
     ]),
   ],
   controllers: [PatientCareReportController],

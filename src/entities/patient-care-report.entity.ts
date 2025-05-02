@@ -14,6 +14,8 @@ import { User } from './user.entity';
 import { Condition } from 'src/enums/condition.enums';
 import { UpdateHistory } from './updateHistory.entity';
 import { RunReport } from './run-report.entity';
+import { MedicalCondition } from './medical-condition.entity';
+import { Allergy } from './allergy.entity';
 
 @Entity()
 export class PatientCareReport {
@@ -23,11 +25,11 @@ export class PatientCareReport {
   @Column({ type: 'enum', enum: Condition, default: Condition.STABLE })
   patientCondition: string;
 
-  @Column({ nullable: true })
-  initialCondition: string;
+  @Column({ type: 'text', nullable: true })
+  primaryAssessment: string;
 
-  @Column({ nullable: true })
-  primarySymptoms: string;
+  @Column({ type: 'text', nullable: true })
+  secondaryAssessment: string;
 
   @Column({ type: 'text', nullable: true })
   notes: string;
@@ -58,4 +60,16 @@ export class PatientCareReport {
     nullable: false,
   })
   runReport: RunReport;
+
+  // Relationship with MedicalCondition
+  @OneToMany(
+    () => MedicalCondition,
+    (medicalCondition) => medicalCondition.PCR,
+    { cascade: true },
+  )
+  medicalConditions: MedicalCondition[];
+
+  // Relationship with Allergy
+  @OneToMany(() => Allergy, (allergy) => allergy.PCR, { cascade: true })
+  allergies: Allergy[];
 }
