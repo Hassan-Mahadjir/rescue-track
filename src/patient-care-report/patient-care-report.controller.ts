@@ -18,6 +18,8 @@ import { Role } from 'src/auth/enums/role.enums';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth/jwt-auth.guard';
 import { Treatment, TreatmentDto } from './dto/create-treatement.dto';
 import { UpdateTreatmentDto } from './dto/update-treatement.dto';
+import { CreateAllergyDto } from './dto/create-allergy.dto';
+import { UpdateAllergyDto } from './dto/update-allergy.dto';
 
 @Controller('patient-care-report')
 export class PatientCareReportController {
@@ -113,5 +115,32 @@ export class PatientCareReportController {
     return this.patientCareReportService.removeTreatmentFromReport(
       +treatmentId,
     );
+  }
+
+  @Post('/allergy/:id')
+  addAllergyToReport(
+    @Param('id') reportId: string,
+    @Body() createAllergyDto: CreateAllergyDto,
+  ) {
+    return this.patientCareReportService.addAllergyToReport(
+      +reportId,
+      createAllergyDto,
+    );
+  }
+
+  @Patch('/allergy/:id')
+  updateAllergyFromReport(
+    @Param('id') allergyId: string,
+    @Body() updateAllergyDto: UpdateAllergyDto,
+  ) {
+    return this.patientCareReportService.updateAllergyFromReport(
+      +allergyId,
+      updateAllergyDto,
+    );
+  }
+
+  @Delete('/allergy/:id')
+  removeAllergyFromReport(@Param('id') allergyId: string) {
+    return this.patientCareReportService.removeAllergyFromReport(+allergyId);
   }
 }

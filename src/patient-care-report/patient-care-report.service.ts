@@ -19,6 +19,8 @@ import { UpdateTreatmentDto } from './dto/update-treatement.dto';
 import { Treatment as TreatmentDto } from './dto/create-treatement.dto';
 import { MedicalCondition } from 'src/entities/medical-condition.entity';
 import { Allergy } from 'src/entities/allergy.entity';
+import { CreateAllergyDto } from './dto/create-allergy.dto';
+import { UpdateAllergyDto } from './dto/update-allergy.dto';
 
 @Injectable()
 export class PatientCareReportService {
@@ -110,6 +112,8 @@ export class PatientCareReportService {
         'initiatedBy',
         'initiatedBy.profile',
         'patient',
+        'allergies',
+        'medicalConditions',
       ],
     });
 
@@ -128,6 +132,8 @@ export class PatientCareReportService {
         'initiatedBy',
         'initiatedBy.profile',
         'patient',
+        'allergies',
+        'medicalConditions',
       ],
     });
 
@@ -155,6 +161,8 @@ export class PatientCareReportService {
         'initiatedBy',
         'initiatedBy.profile',
         'patient',
+        'allergies',
+        'medicalConditions',
       ],
     });
     if (!PCR)
@@ -195,7 +203,13 @@ export class PatientCareReportService {
   ) {
     const report = await this.PCRRepository.findOne({
       where: { id },
-      relations: ['treatments', 'patient', 'initiatedBy'],
+      relations: [
+        'treatments',
+        'patient',
+        'initiatedBy',
+        'allergies',
+        'medicalConditions',
+      ],
     });
 
     if (!report) {
@@ -247,7 +261,12 @@ export class PatientCareReportService {
   async remove(id: number) {
     const report = await this.PCRRepository.findOne({
       where: { id },
-      relations: ['treatments', 'updateHistory'], // make sure to load related entities
+      relations: [
+        'treatments',
+        'updateHistory',
+        'allergies',
+        'medicalConditions',
+      ], // make sure to load related entities
     });
 
     if (!report) {
@@ -261,6 +280,15 @@ export class PatientCareReportService {
     if (report.treatments.length > 0) {
       await this.treatmentRepository.remove(report.treatments);
     }
+
+    if (report.allergies.length > 0) {
+      await this.allergyRepository.remove(report.allergies);
+    }
+
+    if (report.medicalConditions.length > 0) {
+      await this.medicalConditionRepository.remove(report.medicalConditions);
+    }
+
     await this.PCRRepository.remove(report);
 
     return {
@@ -323,6 +351,61 @@ export class PatientCareReportService {
     return {
       status: HttpStatus.OK,
       message: 'Treatment removed successfully',
+    };
+  }
+
+  async addAllergyToReport(
+    reportId: number,
+    createAllergyDto: CreateAllergyDto,
+  ) {
+    const report = await this.PCRRepository.findOne({
+      where: { id: reportId },
+      relations: ['allergies'],
+    });
+
+    if (!report) {
+      throw new NotFoundException(`Report with id ${reportId} not found`);
+    }
+
+    const newAllergy = this.allergyRepository.create(createAllergyDto);
+    report.allergies.push(newAllergy);
+    await this.PCRRepository.save(report);
+
+    return {
+      status: HttpStatus.CREATED,
+      message: 'Allergy added to report successfully',
+      data: newAllergy,
+    };
+  }
+
+  async updateAllergyFromReport(
+    allergyId: number,
+    updateAllergyDto: UpdateAllergyDto,
+  ) {
+    const allergy = await this.allergyRepository.findOne({
+      where: { id: allergyId },
+    });
+
+    if (!allergy) {
+      throw new NotFoundException(`Allergy with id ${allergyId} not found`);
+    }
+
+    Object.assign(allergy, updateAllergyDto);
+    const updatedAllergy = await this.allergyRepository.save(allergy);
+
+    return {
+      status: HttpStatus.OK,
+      message: 'Allergy updated successfully',
+      data: updatedAllergy,
+    };
+  }
+
+  async removeAllergyFromReport(allergyId: number) {
+    await this.allergyRepository.delete(allergyId);
+
+    return {
+      status: HttpStatus.OK,
+      message: 'Allergy removed successfully',
     };
   }
 }

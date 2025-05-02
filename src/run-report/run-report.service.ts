@@ -172,6 +172,8 @@ export class RunReportService {
       report.patient = patient;
     }
 
+    // Update the report with the new data
+    Object.assign(report, updateRunReportDto);
     const updatedReport = await this.runReportRepository.save(report);
 
     const updateBy = await this.userService.findOne(report.initiatedBy.id);
