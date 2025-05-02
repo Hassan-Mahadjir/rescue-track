@@ -20,6 +20,8 @@ import { Treatment, TreatmentDto } from './dto/create-treatement.dto';
 import { UpdateTreatmentDto } from './dto/update-treatement.dto';
 import { CreateAllergyDto } from './dto/create-allergy.dto';
 import { UpdateAllergyDto } from './dto/update-allergy.dto';
+import { CreateMedicalConditionDto } from './dto/create-medical-condition.dto';
+import { UpdateMedicalConditionDto } from './dto/update-medical-condition.dto';
 
 @Controller('patient-care-report')
 export class PatientCareReportController {
@@ -142,5 +144,34 @@ export class PatientCareReportController {
   @Delete('/allergy/:id')
   removeAllergyFromReport(@Param('id') allergyId: string) {
     return this.patientCareReportService.removeAllergyFromReport(+allergyId);
+  }
+
+  @Post('/medical-condition/:id')
+  addMedicalConditionToReport(
+    @Param('id') reportId: string,
+    @Body() createMedicalConditionDto: CreateMedicalConditionDto,
+  ) {
+    return this.patientCareReportService.addMedicalConditionToReport(
+      +reportId,
+      createMedicalConditionDto,
+    );
+  }
+
+  @Patch('/medical-condition/:id')
+  updateMedicalConditionFromReport(
+    @Param('id') medicalConditionId: string,
+    @Body() updateMedicalConditionDto: UpdateMedicalConditionDto,
+  ) {
+    return this.patientCareReportService.updateMedicalConditionFromReport(
+      +medicalConditionId,
+      updateMedicalConditionDto,
+    );
+  }
+
+  @Delete('/medical-condition/:id')
+  removeMedicalConditionFromReport(@Param('id') medicalConditionId: string) {
+    return this.patientCareReportService.removeMedicalConditionFromReport(
+      +medicalConditionId,
+    );
   }
 }

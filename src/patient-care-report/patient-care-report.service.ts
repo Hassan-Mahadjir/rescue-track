@@ -21,6 +21,8 @@ import { MedicalCondition } from 'src/entities/medical-condition.entity';
 import { Allergy } from 'src/entities/allergy.entity';
 import { CreateAllergyDto } from './dto/create-allergy.dto';
 import { UpdateAllergyDto } from './dto/update-allergy.dto';
+import { CreateMedicalConditionDto } from './dto/create-medical-condition.dto';
+import { UpdateMedicalConditionDto } from './dto/update-medical-condition.dto';
 
 @Injectable()
 export class PatientCareReportService {
@@ -406,6 +408,66 @@ export class PatientCareReportService {
     return {
       status: HttpStatus.OK,
       message: 'Allergy removed successfully',
+    };
+  }
+
+  async addMedicalConditionToReport(
+    reportId: number,
+    createMedicalConditionDto: CreateMedicalConditionDto,
+  ) {
+    const report = await this.PCRRepository.findOne({
+      where: { id: reportId },
+      relations: ['medicalConditions'],
+    });
+
+    if (!report) {
+      throw new NotFoundException(`Report with id ${reportId} not found`);
+    }
+
+    const newMedicalCondition = this.medicalConditionRepository.create(
+      createMedicalConditionDto,
+    );
+    report.medicalConditions.push(newMedicalCondition);
+    await this.PCRRepository.save(report);
+
+    return {
+      status: HttpStatus.CREATED,
+      message: 'Medical condition added to report successfully',
+      data: newMedicalCondition,
+    };
+  }
+
+  async updateMedicalConditionFromReport(
+    medicalConditionId: number,
+    updateMedicalConditionDto: UpdateMedicalConditionDto,
+  ) {
+    const medicalCondition = await this.medicalConditionRepository.findOne({
+      where: { id: medicalConditionId },
+    });
+
+    if (!medicalCondition) {
+      throw new NotFoundException(
+        `Medical condition with id ${medicalConditionId} not found`,
+      );
+    }
+
+    Object.assign(medicalCondition, updateMedicalConditionDto);
+    const updatedMedicalCondition =
+      await this.medicalConditionRepository.save(medicalCondition);
+
+    return {
+      status: HttpStatus.OK,
+      message: 'Medical condition updated successfully',
+      data: updatedMedicalCondition,
+    };
+  }
+
+  async removeMedicalConditionFromReport(medicalConditionId: number) {
+    await this.medicalConditionRepository.delete(medicalConditionId);
+
+    return {
+      status: HttpStatus.OK,
+      message: 'Medical condition removed successfully',
     };
   }
 }
