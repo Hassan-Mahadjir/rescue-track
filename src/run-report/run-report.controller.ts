@@ -39,6 +39,11 @@ export class RunReportController {
     return this.runReportService.findOne(+id);
   }
 
+  @Get('/unique-recent')
+  getRecentReports() {
+    return this.runReportService.getRecentReports();
+  }
+
   @Get(':id')
   getReportLast24Hours(@Param('id') id: string, @Req() req) {
     const userId = Number(req.user.id);
