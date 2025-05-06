@@ -19,7 +19,7 @@ export const databaseConfig = {
       url: process.env.ATK_MAIN_DATABASE_URL,
       type: 'postgres',
       port: Number(process.env.ATK_MAIN_DATABASE_PORT),
-      entities: [path.resolve(__dirname, '..') + '/**/*.entity{.ts,.js}'],
+      entities: [path.resolve(__dirname, '../entities/*.entity{.ts,.js}')],
       synchronize: true,
     }),
   ),

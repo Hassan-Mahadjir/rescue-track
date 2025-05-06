@@ -13,6 +13,8 @@ import { DevtoolsModule } from '@nestjs/devtools-integration';
 import { PatientModule } from './patient/patient.module';
 import { PatientCareReportModule } from './patient-care-report/patient-care-report.module';
 import { RunReportModule } from './run-report/run-report.module';
+import { TenantModule } from './tenant/tenant.module';
+import { AdministratorModule } from './administrator/administrator.module';
 
 @Module({
   controllers: [AppController],
@@ -45,6 +47,8 @@ import { RunReportModule } from './run-report/run-report.module';
     PatientModule,
     PatientCareReportModule,
     RunReportModule,
+    TenantModule,
+    AdministratorModule,
   ],
 })
 export class AppModule {}
