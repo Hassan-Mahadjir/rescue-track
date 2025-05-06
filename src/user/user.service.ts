@@ -41,7 +41,10 @@ export class UserService {
       throw new ConflictException('Email already exists');
     }
 
-    const user = await this.UserRepo.create(createUserDto);
+    const user = await this.UserRepo.create({
+      ...createUserDto,
+      email: createUserDto.email.toLocaleLowerCase(),
+    });
     await this.UserRepo.save(user);
 
     if (createProfileDto) {

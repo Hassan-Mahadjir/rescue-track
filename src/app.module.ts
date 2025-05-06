@@ -24,11 +24,19 @@ import { RunReportModule } from './run-report/run-report.module';
     ConfigModule.forRoot({
       isGlobal: true,
       expandVariables: true,
-      load: [dbConfig, dbConfigProduction],
+      load: [dbConfig.primary, dbConfig.secondary, dbConfigProduction],
     }),
     TypeOrmModule.forRootAsync({
       useFactory:
-        process.env.NODE_ENV === 'production' ? dbConfigProduction : dbConfig,
+        process.env.NODE_ENV === 'production'
+          ? dbConfigProduction
+          : dbConfig.primary,
+    }),
+    TypeOrmModule.forRootAsync({
+      useFactory:
+        process.env.NODE_ENV === 'production'
+          ? dbConfigProduction
+          : dbConfig.secondary,
     }),
     UserModule,
     AuthModule,

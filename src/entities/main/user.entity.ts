@@ -1,0 +1,45 @@
+import {
+  BeforeInsert,
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+
+import * as argon2 from 'argon2';
+import { Role } from 'src/auth/enums/role.enums';
+
+@Entity()
+export class User {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column({ unique: true })
+  email: string;
+
+  @Column()
+  password: string;
+
+  @Column({ type: 'enum', enum: Role, default: Role.ADMIN })
+  role: Role;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @Column({ nullable: true, type: 'text' })
+  hashedRefreshToken: string | null;
+
+  @Column({ nullable: true })
+  otp: string;
+
+  @Column({ nullable: true })
+  otpCodeExpiry: Date;
+
+  @Column({ default: false })
+  isVerified: boolean;
+
+  @BeforeInsert()
+  async hashPassword() {
+    this.password = await argon2.hash(this.password);
+  }
+}
