@@ -3,21 +3,30 @@ import {
   HttpStatus,
   Injectable,
   NotFoundException,
+  forwardRef,
+  Inject,
 } from '@nestjs/common';
 import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Profile } from 'src/entities/profile.entity';
+import { Profile as TenantProfile } from 'src/entities/profile.entity';
 import { Repository } from 'typeorm';
 import { UserService } from 'src/user/user.service';
 import { Gender } from '../enums/gender.enums';
 import { Nationality } from '../enums/nationality.enums';
+import { Profile as AdminProfile } from 'src/entities/main/profile.entity';
+import { AdministratorService } from 'src/administrator/administrator.service';
 
 @Injectable()
 export class ProfileService {
   constructor(
-    @InjectRepository(Profile) private profileRepository: Repository<Profile>,
+    @InjectRepository(TenantProfile, 'secondary')
+    private profileRepository: Repository<TenantProfile>,
     private userService: UserService,
+    @InjectRepository(AdminProfile, 'primary')
+    private adminProfileRepository: Repository<AdminProfile>,
+    @Inject(forwardRef(() => AdministratorService))
+    private adminUserService: AdministratorService,
   ) {}
 
   async create(userId: number, createProfileDto: CreateProfileDto) {

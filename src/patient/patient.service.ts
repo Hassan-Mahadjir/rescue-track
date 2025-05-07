@@ -19,8 +19,9 @@ import { UpdateHistory } from 'src/entities/updateHistory.entity';
 @Injectable()
 export class PatientService {
   constructor(
-    @InjectRepository(Patient) private patientRepository: Repository<Patient>,
-    @InjectRepository(UpdateHistory)
+    @InjectRepository(Patient, 'secondary')
+    private patientRepository: Repository<Patient>,
+    @InjectRepository(UpdateHistory, 'secondary')
     private patientUpdateHistoryRepository: Repository<UpdateHistory>,
     private userService: UserService,
   ) {}

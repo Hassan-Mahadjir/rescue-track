@@ -29,12 +29,14 @@ import { AdministratorModule } from './administrator/administrator.module';
       load: [dbConfig.primary, dbConfig.secondary, dbConfigProduction],
     }),
     TypeOrmModule.forRootAsync({
+      name: 'primary',
       useFactory:
         process.env.NODE_ENV === 'production'
           ? dbConfigProduction
           : dbConfig.primary,
     }),
     TypeOrmModule.forRootAsync({
+      name: 'secondary',
       useFactory:
         process.env.NODE_ENV === 'production'
           ? dbConfigProduction

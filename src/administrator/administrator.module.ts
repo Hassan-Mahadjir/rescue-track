@@ -2,12 +2,14 @@ import { Module } from '@nestjs/common';
 import { AdministratorService } from './administrator.service';
 import { AdministratorController } from './administrator.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from '../entities/main/user.entity';
-import { Profile } from '../entities/main/profile.entity';
+import { User as AdminUser } from 'src/entities/main/user.entity';
+import { Profile as AdminProfile } from 'src/entities/main/profile.entity';
+import { ProfileModule } from 'src/profile/profile.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Profile])],
+  imports: [TypeOrmModule.forFeature([AdminUser, AdminProfile], 'primary')],
   controllers: [AdministratorController],
   providers: [AdministratorService],
+  exports: [AdministratorService],
 })
 export class AdministratorModule {}

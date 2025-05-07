@@ -12,14 +12,10 @@ import { PatientCareReport } from 'src/entities/patient-care-report.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      User,
-      RunReport,
-      UpdateHistory,
-      Patient,
-      Profile,
-      PatientCareReport,
-    ]),
+    TypeOrmModule.forFeature(
+      [User, RunReport, UpdateHistory, Patient, Profile, PatientCareReport],
+      'secondary',
+    ),
   ],
   controllers: [RunReportController],
   providers: [RunReportService, UserService],

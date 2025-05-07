@@ -4,7 +4,8 @@ import { AuthController } from './auth.controller';
 import { UserService } from 'src/user/user.service';
 import { LocalStrategy } from './strategies/local.strategy';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from 'src/entities/user.entity';
+import { User as TenantUser } from 'src/entities/user.entity';
+import { User as AdminUser } from 'src/entities/main/user.entity';
 import { JwtModule } from '@nestjs/jwt';
 import jwtConfig from './config/jwt.config';
 import { ConfigModule } from '@nestjs/config';
@@ -19,11 +20,13 @@ import { GoogleStrategy } from './strategies/google.strategy';
 import { MicrosoftStrategy } from './strategies/microsoft.strategy';
 import microsoftOauthConfig from './config/microsoft-oauth.config';
 import { MailService } from 'src/mail/mail.service';
-import { Profile } from 'src/entities/profile.entity';
-
+import { Profile as TenantProfile } from 'src/entities/profile.entity';
+import { Profile as AdminProfile } from 'src/entities/main/profile.entity';
+import { AdministratorService } from 'src/administrator/administrator.service';
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Profile]),
+    TypeOrmModule.forFeature([TenantUser, TenantProfile], 'secondary'),
+    TypeOrmModule.forFeature([AdminUser, AdminProfile], 'primary'),
     JwtModule.registerAsync(jwtConfig.asProvider()),
     ConfigModule.forFeature(jwtConfig),
     ConfigModule.forFeature(refreshJwtConfig),
@@ -34,6 +37,7 @@ import { Profile } from 'src/entities/profile.entity';
   providers: [
     AuthService,
     UserService,
+    AdministratorService,
     LocalStrategy,
     JwtStrategy,
     RefreshJwtStrategy,

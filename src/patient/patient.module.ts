@@ -9,7 +9,12 @@ import { UserService } from 'src/user/user.service';
 import { UpdateHistory } from 'src/entities/updateHistory.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Patient, User, Profile, UpdateHistory])],
+  imports: [
+    TypeOrmModule.forFeature(
+      [Patient, User, Profile, UpdateHistory],
+      'secondary',
+    ),
+  ],
   controllers: [PatientController],
   providers: [PatientService, UserService],
   exports: [PatientService],

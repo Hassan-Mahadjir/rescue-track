@@ -14,17 +14,20 @@ import { MedicalCondition } from 'src/entities/medical-condition.entity';
 import { Allergy } from 'src/entities/allergy.entity';
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      User,
-      PatientCareReport,
-      Treatment,
-      Profile,
-      Patient,
-      UpdateHistory,
-      RunReport,
-      MedicalCondition,
-      Allergy,
-    ]),
+    TypeOrmModule.forFeature(
+      [
+        User,
+        PatientCareReport,
+        Treatment,
+        Profile,
+        Patient,
+        UpdateHistory,
+        RunReport,
+        MedicalCondition,
+        Allergy,
+      ],
+      'secondary',
+    ),
   ],
   controllers: [PatientCareReportController],
   providers: [PatientCareReportService, UserService],

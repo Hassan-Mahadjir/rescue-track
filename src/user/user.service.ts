@@ -19,8 +19,10 @@ import { Role } from 'src/auth/enums/role.enums';
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRepository(User) private UserRepo: Repository<User>,
-    @InjectRepository(Profile) private profileRepository: Repository<Profile>,
+    @InjectRepository(User, 'secondary')
+    private UserRepo: Repository<User>,
+    @InjectRepository(Profile, 'secondary')
+    private profileRepository: Repository<Profile>,
   ) {}
 
   async updateHashedRefreshToken(userId: number, refreshToken: string | null) {

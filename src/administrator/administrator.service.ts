@@ -1,8 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from 'src/entities/main/user.entity';
-import { Profile } from 'src/entities/main/profile.entity';
+import { User as AdminUser } from 'src/entities/main/user.entity';
+import { Profile as AdminProfile } from 'src/entities/main/profile.entity';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { CreateProfileDto } from 'src/profile/dto/create-profile.dto';
 import { Role } from 'src/auth/enums/role.enums';
@@ -13,29 +17,29 @@ import { HttpStatus } from '@nestjs/common';
 @Injectable()
 export class AdministratorService {
   constructor(
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
-    @InjectRepository(Profile)
-    private profileRepository: Repository<Profile>,
+    @InjectRepository(AdminUser, 'primary')
+    private primaryUserRepository: Repository<AdminUser>,
+    @InjectRepository(AdminProfile, 'primary')
+    private primaryProfileRepository: Repository<AdminProfile>,
   ) {}
 
   async createAdmin(
     createUserDto: CreateUserDto,
     createProfileDto: CreateProfileDto,
   ) {
-    const existingUser = await this.userRepository.findOne({
+    const existingUser = await this.primaryUserRepository.findOne({
       where: { email: createUserDto.email },
     });
     if (existingUser) {
-      throw new Error('Email already exists');
+      throw new ConflictException('Email already exists');
     }
 
-    const user = this.userRepository.create({
+    const user = this.primaryUserRepository.create({
       ...createUserDto,
       email: createUserDto.email.toLowerCase(),
-      role: Role.ADMIN, // Set role as ADMIN
+      role: Role.ADMIN,
     });
-    await this.userRepository.save(user);
+    await this.primaryUserRepository.save(user);
 
     if (createProfileDto) {
       await this.createProfile(user.id, createProfileDto);
@@ -49,19 +53,21 @@ export class AdministratorService {
   }
 
   async createProfile(userId: number, createProfileDto: CreateProfileDto) {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
+    const user = await this.primaryUserRepository.findOne({
+      where: { id: userId },
+    });
     if (!user) {
-      throw new Error('User not found');
+      throw new NotFoundException(`User with ID: ${userId} not found`);
     }
 
-    const newProfile = this.profileRepository.create({
+    const newProfile = this.primaryProfileRepository.create({
       ...createProfileDto,
       gender: createProfileDto.gender as Gender,
       nationality: createProfileDto.nationality as Nationality,
       user,
     });
 
-    const profile = await this.profileRepository.save(newProfile);
+    const profile = await this.primaryProfileRepository.save(newProfile);
     return {
       status: HttpStatus.CREATED,
       message: 'Profile created successfully',
@@ -70,13 +76,17 @@ export class AdministratorService {
   }
 
   async findByEmail(email: string) {
-    return await this.userRepository.findOne({ where: { email } });
+    return await this.primaryUserRepository.findOne({ where: { email } });
   }
 
   async findOne(id: number) {
-    return await this.userRepository.findOne({
+    const user = await this.primaryUserRepository.findOne({
       where: { id },
       select: ['id', 'email', 'password', 'role', 'hashedRefreshToken'],
     });
+
+    if (!user) throw new NotFoundException(`User with ${id} not found`);
+
+    return user;
   }
 }

@@ -12,14 +12,15 @@ import { Patient } from 'src/entities/patient.entity';
 @Injectable()
 export class RunReportService {
   constructor(
-    @InjectRepository(RunReport)
+    @InjectRepository(RunReport, 'secondary')
     private runReportRepository: Repository<RunReport>,
     private userService: UserService,
-    @InjectRepository(UpdateHistory)
+    @InjectRepository(UpdateHistory, 'secondary')
     private updateHistoryRepository: Repository<UpdateHistory>,
-    @InjectRepository(PatientCareReport)
+    @InjectRepository(PatientCareReport, 'secondary')
     private PCRRepository: Repository<PatientCareReport>,
-    @InjectRepository(Patient) private patientRepository: Repository<Patient>,
+    @InjectRepository(Patient, 'secondary')
+    private patientRepository: Repository<Patient>,
   ) {}
 
   async create(

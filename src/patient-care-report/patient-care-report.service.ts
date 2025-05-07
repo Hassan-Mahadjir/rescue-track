@@ -27,19 +27,20 @@ import { UpdateMedicalConditionDto } from './dto/update-medical-condition.dto';
 @Injectable()
 export class PatientCareReportService {
   constructor(
-    @InjectRepository(PatientCareReport)
+    @InjectRepository(PatientCareReport, 'secondary')
     private PCRRepository: Repository<PatientCareReport>,
-    @InjectRepository(Treatment)
+    @InjectRepository(Treatment, 'secondary')
     private treatmentRepository: Repository<Treatment>,
     private userService: UserService,
-    @InjectRepository(Patient) private patientRepository: Repository<Patient>,
-    @InjectRepository(UpdateHistory)
+    @InjectRepository(Patient, 'secondary')
+    private patientRepository: Repository<Patient>,
+    @InjectRepository(UpdateHistory, 'secondary')
     private updateHistoryRepository: Repository<UpdateHistory>,
-    @InjectRepository(RunReport)
+    @InjectRepository(RunReport, 'secondary')
     private runReportRepository: Repository<RunReport>,
-    @InjectRepository(MedicalCondition)
+    @InjectRepository(MedicalCondition, 'secondary')
     private medicalConditionRepository: Repository<MedicalCondition>,
-    @InjectRepository(Allergy)
+    @InjectRepository(Allergy, 'secondary')
     private allergyRepository: Repository<Allergy>,
   ) {}
   async create(
