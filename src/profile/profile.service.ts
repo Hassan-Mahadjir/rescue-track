@@ -17,6 +17,7 @@ import { Nationality } from '../enums/nationality.enums';
 import { Profile as AdminProfile } from 'src/entities/main/profile.entity';
 import { AdministratorService } from 'src/administrator/administrator.service';
 
+import { UpdateAdminProfileDto } from './dto/update-admin-profile.dto';
 @Injectable()
 export class ProfileService {
   constructor(
@@ -25,12 +26,10 @@ export class ProfileService {
     private userService: UserService,
     @InjectRepository(AdminProfile, 'primary')
     private adminProfileRepository: Repository<AdminProfile>,
-    @Inject(forwardRef(() => AdministratorService))
-    private adminUserService: AdministratorService,
   ) {}
 
   async create(userId: number, createProfileDto: CreateProfileDto) {
-    // Get user object
+    // create profile for tenant
     const user = await this.userService.findOne(userId);
     // Create profile object
     const newProfile = this.profileRepository.create({
@@ -60,8 +59,12 @@ export class ProfileService {
     return `This action returns all profile`;
   }
 
-  async findOne(id: number) {
-    const userProfile = await this.profileRepository
+  async findOne(id: number, isAdmin: boolean = false) {
+    const repository = isAdmin
+      ? this.adminProfileRepository
+      : this.profileRepository;
+
+    const userProfile = await repository
       .createQueryBuilder('profile')
       .innerJoinAndSelect('profile.user', 'user')
       .where('profile.user.id = :id', { id })
@@ -78,8 +81,16 @@ export class ProfileService {
     };
   }
 
-  async update(id: number, updateProfileDto: UpdateProfileDto) {
-    const updateResult = await this.profileRepository.update(
+  async update(
+    id: number,
+    updateProfileDto: UpdateProfileDto | UpdateAdminProfileDto,
+    isAdmin: boolean = false,
+  ) {
+    const repository = isAdmin
+      ? this.adminProfileRepository
+      : this.profileRepository;
+
+    const updateResult = await repository.update(
       { user: { id } },
       updateProfileDto,
     );
@@ -88,7 +99,7 @@ export class ProfileService {
       throw new NotFoundException(`Profile with ID ${id} not found`);
     }
 
-    const updatedProfile = await this.profileRepository.findOne({
+    const updatedProfile = await repository.findOne({
       where: { user: { id } },
     });
 
@@ -99,8 +110,12 @@ export class ProfileService {
     };
   }
 
-  remove(id: number) {
-    const deleteResult = this.profileRepository.delete({ user: { id } });
+  remove(id: number, isAdmin: boolean = false) {
+    const repository = isAdmin
+      ? this.adminProfileRepository
+      : this.profileRepository;
+
+    const deleteResult = repository.delete({ user: { id } });
     return {
       status: HttpStatus.OK,
       message: 'Profile deleted successfully',
