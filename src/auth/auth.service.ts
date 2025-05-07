@@ -16,21 +16,25 @@ import { CurrentUser } from './types/current-user';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { MailService } from 'src/mail/mail.service';
 import { CreateProfileDto } from 'src/profile/dto/create-profile.dto';
+import { AdministratorService } from 'src/administrator/administrator.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private userService: UserService,
+    private administratorService: AdministratorService,
     private mailService: MailService,
     private jwtService: JwtService,
     @Inject(refreshJwtConfig.KEY)
     private refreshJwtConfiguration: ConfigType<typeof refreshJwtConfig>,
   ) {}
 
-  async validateUser(email: string, password: string) {
-    const user = await this.userService.findByEmail(email);
+  async validateUser(email: string, password: string, isAdmin: boolean) {
+    const user = isAdmin
+      ? await this.administratorService.findByEmail(email)
+      : await this.userService.findByEmail(email);
 
-    if (!user) throw new UnauthorizedException('User not found!');
+    if (!user) throw new UnauthorizedException('User not found! ---');
 
     const isPasswordMatch = await argon2.verify(user.password, password);
     if (!isPasswordMatch)
@@ -42,11 +46,24 @@ export class AuthService {
     return { id: user.id };
   }
 
-  async login(userId: number) {
-    const { accessToken, refreshToken } = await this.generateTokens(userId);
+  async login(userId: number, isAdmin: boolean) {
+    const { accessToken, refreshToken } = await this.generateTokens(
+      userId,
+      isAdmin,
+    );
     const hashedRefreshToken = await argon2.hash(refreshToken);
 
-    await this.userService.updateHashedRefreshToken(userId, hashedRefreshToken);
+    if (isAdmin) {
+      await this.administratorService.updateHashedRefreshToken(
+        userId,
+        hashedRefreshToken,
+      );
+    } else {
+      await this.userService.updateHashedRefreshToken(
+        userId,
+        hashedRefreshToken,
+      );
+    }
 
     return {
       status: HttpStatus.OK,
@@ -55,8 +72,11 @@ export class AuthService {
     };
   }
 
-  async generateTokens(userId: number) {
-    const user = await this.userService.findOne(userId);
+  async generateTokens(userId: number, isAdmin: boolean) {
+    const user = isAdmin
+      ? await this.administratorService.findOne(userId)
+      : await this.userService.findOne(userId);
+
     const payload: AuthJwtPayload = { sub: userId, role: user.role };
 
     const [accessToken, refreshToken] = await Promise.all([
@@ -67,11 +87,24 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  async refreshToken(userId: number) {
-    const { accessToken, refreshToken } = await this.generateTokens(userId);
+  async refreshToken(userId: number, isAdmin: boolean) {
+    const { accessToken, refreshToken } = await this.generateTokens(
+      userId,
+      isAdmin,
+    );
     const hashedRefreshToken = await argon2.hash(refreshToken);
 
-    await this.userService.updateHashedRefreshToken(userId, hashedRefreshToken);
+    if (isAdmin) {
+      await this.administratorService.updateHashedRefreshToken(
+        userId,
+        hashedRefreshToken,
+      );
+    } else {
+      await this.userService.updateHashedRefreshToken(
+        userId,
+        hashedRefreshToken,
+      );
+    }
 
     return { id: userId, accessToken, refreshToken };
   }

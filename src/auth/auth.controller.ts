@@ -48,14 +48,29 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(@Request() request) {
-    return this.authService.login(request.user.id);
+    return this.authService.login(request.user.id, false);
+  }
+
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(LocalAuthGuard)
+  @Post('admin/login')
+  async adminLogin(@Request() request) {
+    return this.authService.login(request.user.id, true);
   }
 
   @Public()
   @UseGuards(RefreshAuthGuard)
   @Post('refresh')
   refreshToken(@Req() req) {
-    return this.authService.refreshToken(req.user.id);
+    return this.authService.refreshToken(req.user.id, false);
+  }
+
+  @Public()
+  @UseGuards(RefreshAuthGuard)
+  @Post('admin/refresh')
+  async adminRefreshToken(@Req() req) {
+    return this.authService.refreshToken(req.user.id, true);
   }
 
   @HttpCode(HttpStatus.OK)
@@ -75,7 +90,7 @@ export class AuthController {
   @UseGuards(GoogleAuthGuard)
   @Get('google/callback')
   async googleCallback(@Req() req, @Res() res) {
-    const response = await this.authService.login(req.user.id);
+    const response = await this.authService.login(req.user.id, false);
     const redirectUrl = new URL(
       `${process.env.HOST_IP_ADDRESS}:3001/google-redirect`,
     ); // temporary page
@@ -94,7 +109,7 @@ export class AuthController {
   @UseGuards(MicrosoftAuthGuard)
   @Get('microsoft/callback')
   async microsoftCallback(@Req() req, @Res() res) {
-    const response = await this.authService.login(req.user.id);
+    const response = await this.authService.login(req.user.id, false);
     const redirectUrl = new URL(
       `${process.env.HOST_IP_ADDRESS}:3001/microsoft-redirect`,
     ); // temporary page

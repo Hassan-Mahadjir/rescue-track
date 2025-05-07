@@ -12,12 +12,12 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(email: string, password: string) {
+  async validate(email: string, password: string, isAdmin: boolean) {
     if (password === '')
       throw new UnauthorizedException(
         'Password is required. Please provide a password.',
       );
 
-    return this.authService.validateUser(email, password);
+    return this.authService.validateUser(email, password, isAdmin);
   }
 }

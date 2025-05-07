@@ -85,8 +85,22 @@ export class AdministratorService {
       select: ['id', 'email', 'password', 'role', 'hashedRefreshToken'],
     });
 
-    if (!user) throw new NotFoundException(`User with ${id} not found`);
+    if (!user) throw new NotFoundException(`User with ID: ${id} not found`);
 
     return user;
+  }
+
+  async updateHashedRefreshToken(userId: number, refreshToken: string | null) {
+    return await this.primaryUserRepository.update(
+      { id: userId },
+      { hashedRefreshToken: refreshToken },
+    );
+  }
+
+  async updateHashedPassword(userId: number, newHashedPassword: string) {
+    return await this.primaryUserRepository.update(
+      { id: userId },
+      { password: newHashedPassword },
+    );
   }
 }
