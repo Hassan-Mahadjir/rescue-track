@@ -221,45 +221,4 @@ export class RunReportService {
       message: `Run with id ${id} has been successfully removed`,
     };
   }
-
-  async getRecentReports() {
-    // Get all run reports with their relations
-    const allReports = await this.runReportRepository.find({
-      relations: [
-        'patient',
-        'initiatedBy.profile',
-        'updateHistory',
-        'patientCareReport',
-      ],
-      order: {
-        createAt: 'DESC',
-      },
-    });
-
-    // Filter out reports that are assigned to PCRs and get the most recent for each patient
-    const recentReportsByPatient = new Map<number, RunReport>();
-
-    for (const report of allReports) {
-      // Skip if report is already assigned to a PCR
-      if (report.patientCareReport) continue;
-
-      // Skip if patient is not defined
-      if (!report.patient?.id) continue;
-
-      // Skip if createAt is not defined
-      if (!report.createAt) continue;
-
-      const existingReport = recentReportsByPatient.get(report.patient.id);
-      // If we haven't seen this patient's report yet or this report is more recent
-      if (!existingReport || report.createAt > existingReport.createAt) {
-        recentReportsByPatient.set(report.patient.id, report);
-      }
-    }
-
-    return {
-      status: HttpStatus.FOUND,
-      message: `${recentReportsByPatient.size} recent run reports found successfully`,
-      data: Array.from(recentReportsByPatient.values()),
-    };
-  }
 }
