@@ -9,10 +9,13 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     super({
       usernameField: 'email',
       passwordField: 'password',
+      passReqToCallback: true, // Enable access to the request object
     });
   }
 
-  async validate(email: string, password: string, isAdmin: boolean) {
+  async validate(req: any, email: string, password: string) {
+    const isAdmin = req.body.isAdmin; // Extract isAdmin from the request body
+
     if (password === '')
       throw new UnauthorizedException(
         'Password is required. Please provide a password.',

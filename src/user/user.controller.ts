@@ -40,7 +40,7 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Get('profile')
   getProfile(@Req() req) {
-    const prifle = this.profileService.findOne(req.user.id);
+    const prifle = this.profileService.findOne(req.user.id, false);
     return prifle;
   }
 
@@ -50,7 +50,7 @@ export class UserController {
     const userId = Number(req.user.id);
     if (isNaN(userId)) throw new BadRequestException('Invalid user id');
 
-    return this.profileService.update(userId, updateProfileDto);
+    return this.profileService.update(userId, updateProfileDto, false);
   }
 
   @Get('/staff')
@@ -90,7 +90,7 @@ export class UserController {
     }
     if (Object.keys(profileField).length > 0) {
       const profileData: CreateProfileDto = profileField as CreateProfileDto;
-      await this.profileService.update(id, profileData);
+      await this.profileService.update(id, profileData, false);
     }
 
     return { message: 'Profile updated successfully' };

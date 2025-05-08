@@ -7,7 +7,10 @@ import { Profile as AdminProfile } from 'src/entities/main/profile.entity';
 import { ProfileModule } from 'src/profile/profile.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([AdminUser, AdminProfile], 'primary')],
+  imports: [
+    TypeOrmModule.forFeature([AdminUser, AdminProfile], 'primary'),
+    ProfileModule,
+  ],
   controllers: [AdministratorController],
   providers: [AdministratorService],
   exports: [AdministratorService],

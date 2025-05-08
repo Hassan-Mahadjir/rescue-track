@@ -17,6 +17,7 @@ import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { MailService } from 'src/mail/mail.service';
 import { CreateProfileDto } from 'src/profile/dto/create-profile.dto';
 import { AdministratorService } from 'src/administrator/administrator.service';
+import { Role } from './enums/role.enums';
 
 @Injectable()
 export class AuthService {
@@ -28,7 +29,6 @@ export class AuthService {
     @Inject(refreshJwtConfig.KEY)
     private refreshJwtConfiguration: ConfigType<typeof refreshJwtConfig>,
   ) {}
-
   async validateUser(email: string, password: string, isAdmin: boolean) {
     const user = isAdmin
       ? await this.administratorService.findByEmail(email)
@@ -109,8 +109,14 @@ export class AuthService {
     return { id: userId, accessToken, refreshToken };
   }
 
-  async validateRefreshToken(userId: number, refreshToken: string) {
-    const user = await this.userService.findOne(userId);
+  async validateRefreshToken(
+    userId: number,
+    refreshToken: string,
+    isAdmin: boolean,
+  ) {
+    const user = isAdmin
+      ? await this.administratorService.findOne(userId)
+      : await this.userService.findOne(userId);
 
     if (!user || !user.hashedRefreshToken)
       throw new UnauthorizedException(
@@ -129,14 +135,21 @@ export class AuthService {
     return { id: user.id };
   }
 
-  async logout(userId: number) {
-    await this.userService.updateHashedRefreshToken(userId, null);
+  async logout(userId: number, isAdmin: boolean) {
+    if (isAdmin) {
+      await this.administratorService.updateHashedRefreshToken(userId, null);
+    } else {
+      await this.userService.updateHashedRefreshToken(userId, null);
+    }
   }
 
-  async validateJwtUser(userId: number) {
-    const user = await this.userService.findOne(userId);
+  async validateJwtUser(userId: number, isAdmin: boolean) {
+    const user = isAdmin
+      ? await this.administratorService.findOne(userId)
+      : await this.userService.findOne(userId);
+
     if (!user) {
-      throw new UnauthorizedException('User not found!');
+      throw new UnauthorizedException('Invalid token or user not found.');
     }
 
     const currentUser: CurrentUser = { id: user.id, role: user.role };

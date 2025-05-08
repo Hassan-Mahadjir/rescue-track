@@ -5,6 +5,7 @@ import jwtConfig from '../config/jwt.config';
 import { AuthJwtPayload } from '../types/auth-jwtPayload';
 import { Inject, Injectable } from '@nestjs/common';
 import { AuthService } from '../auth.service';
+import { Role } from '../enums/role.enums';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -23,6 +24,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   validate(payload: AuthJwtPayload) {
     const userId = payload.sub;
-    return this.authService.validateJwtUser(userId);
+    const role = payload.role;
+    const isAdmin = role === Role.ADMIN; // Check if the role is 'admin'
+    return this.authService.validateJwtUser(userId, isAdmin);
   }
 }

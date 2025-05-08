@@ -48,7 +48,8 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(@Request() request) {
-    return this.authService.login(request.user.id, false);
+    const isAdmin = false; // Explicitly set isAdmin to false for regular login
+    return this.authService.login(request.user.id, isAdmin);
   }
 
   @Public()
@@ -56,7 +57,8 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('admin/login')
   async adminLogin(@Request() request) {
-    return this.authService.login(request.user.id, true);
+    const isAdmin = true; // Explicitly set isAdmin to true for admin login
+    return this.authService.login(request.user.id, isAdmin);
   }
 
   @Public()
@@ -75,9 +77,17 @@ export class AuthController {
 
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
+  @Post('admin/logout')
+  async adminLogout(@Req() req) {
+    this.authService.logout(req.user.id, true);
+    return { message: 'Logout successful' };
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
   @Post('logout')
   async logout(@Req() req) {
-    this.authService.logout(req.user.id);
+    this.authService.logout(req.user.id, false);
     return { message: 'Logout successful' };
   }
 

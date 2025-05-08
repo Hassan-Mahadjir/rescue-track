@@ -7,6 +7,7 @@ import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import refreshJwtConfig from '../config/refresh-jwt.config';
 import { Request } from 'express';
 import { AuthService } from '../auth.service';
+import { Role } from '../enums/role.enums';
 
 @Injectable()
 export class RefreshJwtStrategy extends PassportStrategy(
@@ -30,11 +31,13 @@ export class RefreshJwtStrategy extends PassportStrategy(
   validate(req: Request, payload: AuthJwtPayload) {
     const refreshToken = req.get('authorization')?.replace('Bearer', '').trim();
     const userId = payload.sub;
+    const role = payload.role;
+    const isAdmin = role === Role.ADMIN; // Check if the role is 'admin'
 
     if (!refreshToken) {
       throw new UnauthorizedException('Refresh token is missing');
     }
     console.log('Refresh token:', refreshToken);
-    return this.authService.validateRefreshToken(userId, refreshToken);
+    return this.authService.validateRefreshToken(userId, refreshToken, isAdmin);
   }
 }
