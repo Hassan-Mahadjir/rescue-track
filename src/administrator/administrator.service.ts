@@ -37,7 +37,6 @@ export class AdministratorService {
     const user = this.primaryUserRepository.create({
       ...createUserDto,
       email: createUserDto.email.toLowerCase(),
-      role: Role.ADMIN,
     });
     await this.primaryUserRepository.save(user);
 

@@ -13,7 +13,7 @@ import { PatientService } from './patient.service';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { Roles } from 'src/auth/decorators/roles.decorator';
-import { Role } from 'src/auth/enums/role.enums';
+import { UserRole } from 'src/enums/user-role.enum';
 
 @Controller('patient')
 export class PatientController {
@@ -29,13 +29,13 @@ export class PatientController {
   }
   // This endpoint is used to get all patients for the admin
   @Get('/manage')
-  @Roles(Role.ADMIN)
+  @Roles(UserRole.ADMIN)
   findAll() {
     return this.patientService.findAll();
   }
 
   @Get('manage/:id')
-  @Roles(Role.ADMIN)
+  @Roles(UserRole.ADMIN)
   findOne(@Param('id') id: string) {
     return this.patientService.findOne(+id);
   }
@@ -76,7 +76,7 @@ export class PatientController {
   }
 
   @Delete('manage/:id')
-  @Roles(Role.ADMIN)
+  @Roles(UserRole.ADMIN)
   remove(@Param('id') id: string) {
     return this.patientService.remove(+id);
   }

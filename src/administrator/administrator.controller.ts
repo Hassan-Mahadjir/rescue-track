@@ -21,7 +21,7 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enums';
 import { RolesJwtAuthGuard } from 'src/auth/guards/role-jwt/role-jwt.guard';
 
-@Roles(Role.ADMIN)
+@Roles(Role.OWNER)
 @Controller('administrator')
 export class AdministratorController {
   constructor(

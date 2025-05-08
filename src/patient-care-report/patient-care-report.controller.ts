@@ -22,6 +22,7 @@ import { CreateAllergyDto } from './dto/create-allergy.dto';
 import { UpdateAllergyDto } from './dto/update-allergy.dto';
 import { CreateMedicalConditionDto } from './dto/create-medical-condition.dto';
 import { UpdateMedicalConditionDto } from './dto/update-medical-condition.dto';
+import { UserRole } from 'src/enums/user-role.enum';
 
 @Controller('patient-care-report')
 export class PatientCareReportController {
@@ -44,13 +45,13 @@ export class PatientCareReportController {
   }
 
   @Get('/manage')
-  @Roles(Role.ADMIN)
+  @Roles(UserRole.ADMIN)
   findAll() {
     return this.patientCareReportService.findAll();
   }
 
   @Get('/manage/:id')
-  @Roles(Role.ADMIN)
+  @Roles(UserRole.ADMIN)
   findOne(@Param('id') id: string) {
     return this.patientCareReportService.findOne(+id);
   }
@@ -83,7 +84,7 @@ export class PatientCareReportController {
   }
 
   @Delete('manage/:id')
-  @Roles(Role.ADMIN)
+  @Roles(UserRole.ADMIN)
   remove(@Param('id') id: string) {
     return this.patientCareReportService.remove(+id);
   }
@@ -100,7 +101,7 @@ export class PatientCareReportController {
   }
 
   @Patch('/treatment/:id')
-  @Roles(Role.ADMIN)
+  @Roles(UserRole.ADMIN)
   updateTreatmentFromReport(
     @Param('id') treatmentId: string,
     @Body() updateTreatmentDto: UpdateTreatmentDto,
@@ -112,7 +113,7 @@ export class PatientCareReportController {
   }
 
   @Delete('/treatment/:id')
-  @Roles(Role.ADMIN)
+  @Roles(UserRole.ADMIN)
   removeTreatmentFromReport(@Param('id') treatmentId: string) {
     return this.patientCareReportService.removeTreatmentFromReport(
       +treatmentId,

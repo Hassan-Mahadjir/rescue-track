@@ -13,7 +13,7 @@ import { RunReportService } from './run-report.service';
 import { CreateRunReportDto } from './dto/create-run-report.dto';
 import { UpdateRunReportDto } from './dto/update-run-report.dto';
 import { Roles } from 'src/auth/decorators/roles.decorator';
-import { Role } from 'src/auth/enums/role.enums';
+import { UserRole } from 'src/enums/user-role.enum';
 
 @Controller('run-report')
 export class RunReportController {
@@ -28,13 +28,13 @@ export class RunReportController {
   }
 
   @Get('/manage')
-  @Roles(Role.ADMIN)
+  @Roles(UserRole.ADMIN)
   findAll() {
     return this.runReportService.findAll();
   }
 
   @Get('/manage/:id')
-  @Roles(Role.ADMIN)
+  @Roles(UserRole.ADMIN)
   findOne(@Param('id') id: string) {
     return this.runReportService.findOne(+id);
   }
@@ -69,7 +69,7 @@ export class RunReportController {
   }
 
   @Delete('/manage/:id')
-  @Roles(Role.ADMIN)
+  @Roles(UserRole.ADMIN)
   remove(@Param('id') id: string) {
     return this.runReportService.remove(+id);
   }

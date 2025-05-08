@@ -6,7 +6,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { compare } from 'bcrypt';
 import { UserService } from 'src/user/user.service';
 import { AuthJwtPayload } from './types/auth-jwtPayload';
 import refreshJwtConfig from './config/refresh-jwt.config';
@@ -17,7 +16,6 @@ import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { MailService } from 'src/mail/mail.service';
 import { CreateProfileDto } from 'src/profile/dto/create-profile.dto';
 import { AdministratorService } from 'src/administrator/administrator.service';
-import { Role } from './enums/role.enums';
 
 @Injectable()
 export class AuthService {
@@ -29,8 +27,8 @@ export class AuthService {
     @Inject(refreshJwtConfig.KEY)
     private refreshJwtConfiguration: ConfigType<typeof refreshJwtConfig>,
   ) {}
-  async validateUser(email: string, password: string, isAdmin: boolean) {
-    const user = isAdmin
+  async validateUser(email: string, password: string, isOwner: boolean) {
+    const user = isOwner
       ? await this.administratorService.findByEmail(email)
       : await this.userService.findByEmail(email);
 
@@ -46,14 +44,14 @@ export class AuthService {
     return { id: user.id };
   }
 
-  async login(userId: number, isAdmin: boolean) {
+  async login(userId: number, isOwner: boolean) {
     const { accessToken, refreshToken } = await this.generateTokens(
       userId,
-      isAdmin,
+      isOwner,
     );
     const hashedRefreshToken = await argon2.hash(refreshToken);
 
-    if (isAdmin) {
+    if (isOwner) {
       await this.administratorService.updateHashedRefreshToken(
         userId,
         hashedRefreshToken,
@@ -72,8 +70,8 @@ export class AuthService {
     };
   }
 
-  async generateTokens(userId: number, isAdmin: boolean) {
-    const user = isAdmin
+  async generateTokens(userId: number, isOwner: boolean) {
+    const user = isOwner
       ? await this.administratorService.findOne(userId)
       : await this.userService.findOne(userId);
 
@@ -87,14 +85,14 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  async refreshToken(userId: number, isAdmin: boolean) {
+  async refreshToken(userId: number, isOwner: boolean) {
     const { accessToken, refreshToken } = await this.generateTokens(
       userId,
-      isAdmin,
+      isOwner,
     );
     const hashedRefreshToken = await argon2.hash(refreshToken);
 
-    if (isAdmin) {
+    if (isOwner) {
       await this.administratorService.updateHashedRefreshToken(
         userId,
         hashedRefreshToken,
@@ -112,9 +110,9 @@ export class AuthService {
   async validateRefreshToken(
     userId: number,
     refreshToken: string,
-    isAdmin: boolean,
+    isOwner: boolean,
   ) {
-    const user = isAdmin
+    const user = isOwner
       ? await this.administratorService.findOne(userId)
       : await this.userService.findOne(userId);
 
@@ -135,16 +133,16 @@ export class AuthService {
     return { id: user.id };
   }
 
-  async logout(userId: number, isAdmin: boolean) {
-    if (isAdmin) {
+  async logout(userId: number, isOwner: boolean) {
+    if (isOwner) {
       await this.administratorService.updateHashedRefreshToken(userId, null);
     } else {
       await this.userService.updateHashedRefreshToken(userId, null);
     }
   }
 
-  async validateJwtUser(userId: number, isAdmin: boolean) {
-    const user = isAdmin
+  async validateJwtUser(userId: number, isOwner: boolean) {
+    const user = isOwner
       ? await this.administratorService.findOne(userId)
       : await this.userService.findOne(userId);
 

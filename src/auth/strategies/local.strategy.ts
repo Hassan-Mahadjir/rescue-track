@@ -14,13 +14,13 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(req: any, email: string, password: string) {
-    const isAdmin = req.body.isAdmin; // Extract isAdmin from the request body
+    const isOwner = req.body.isOwner; // Extract isOwner from the request body
 
     if (password === '')
       throw new UnauthorizedException(
         'Password is required. Please provide a password.',
       );
 
-    return this.authService.validateUser(email, password, isAdmin);
+    return this.authService.validateUser(email, password, isOwner);
   }
 }

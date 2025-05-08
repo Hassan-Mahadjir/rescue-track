@@ -48,8 +48,8 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(@Request() request) {
-    const isAdmin = false; // Explicitly set isAdmin to false for regular login
-    return this.authService.login(request.user.id, isAdmin);
+    const isOwner = false; // Explicitly set isOwner to false for regular login
+    return this.authService.login(request.user.id, isOwner);
   }
 
   @Public()
@@ -57,8 +57,8 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('admin/login')
   async adminLogin(@Request() request) {
-    const isAdmin = true; // Explicitly set isAdmin to true for admin login
-    return this.authService.login(request.user.id, isAdmin);
+    const isOwner = true; // Explicitly set isOwner to true for admin login
+    return this.authService.login(request.user.id, isOwner);
   }
 
   @Public()

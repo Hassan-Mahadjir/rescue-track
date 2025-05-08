@@ -25,7 +25,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   validate(payload: AuthJwtPayload) {
     const userId = payload.sub;
     const role = payload.role;
-    const isAdmin = role === Role.ADMIN; // Check if the role is 'admin'
-    return this.authService.validateJwtUser(userId, isAdmin);
+    const isOwner = role === Role.OWNER; // Check if the role is 'admin'
+    return this.authService.validateJwtUser(userId, isOwner);
   }
 }

@@ -11,6 +11,7 @@ import {
 
 import * as argon2 from 'argon2';
 import { Role } from 'src/auth/enums/role.enums';
+import { UserRole } from 'src/enums/user-role.enum';
 import { Profile } from './profile.entity';
 import { Patient } from './patient.entity';
 import { PatientCareReport } from './patient-care-report.entity';
@@ -27,8 +28,8 @@ export class User {
   @Column()
   password: string;
 
-  @Column({ type: 'enum', enum: Role, default: Role.EMPLOYEE })
-  role: Role;
+  @Column({ type: 'enum', enum: UserRole, default: UserRole.EMPLOYEE })
+  role: UserRole;
 
   @CreateDateColumn()
   createdAt: Date;

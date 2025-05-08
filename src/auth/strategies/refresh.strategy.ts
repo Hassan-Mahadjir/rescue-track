@@ -32,12 +32,12 @@ export class RefreshJwtStrategy extends PassportStrategy(
     const refreshToken = req.get('authorization')?.replace('Bearer', '').trim();
     const userId = payload.sub;
     const role = payload.role;
-    const isAdmin = role === Role.ADMIN; // Check if the role is 'admin'
+    const isOwner = role === Role.OWNER; // Check if the role is 'admin'
 
     if (!refreshToken) {
       throw new UnauthorizedException('Refresh token is missing');
     }
     console.log('Refresh token:', refreshToken);
-    return this.authService.validateRefreshToken(userId, refreshToken, isAdmin);
+    return this.authService.validateRefreshToken(userId, refreshToken, isOwner);
   }
 }

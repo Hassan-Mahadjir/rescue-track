@@ -59,8 +59,8 @@ export class ProfileService {
     return `This action returns all profile`;
   }
 
-  async findOne(id: number, isAdmin: boolean) {
-    const repository = isAdmin
+  async findOne(id: number, isOwner: boolean) {
+    const repository = isOwner
       ? this.adminProfileRepository
       : this.profileRepository;
 
@@ -84,9 +84,9 @@ export class ProfileService {
   async update(
     id: number,
     updateProfileDto: UpdateProfileDto | UpdateAdminProfileDto,
-    isAdmin: boolean,
+    isOwner: boolean,
   ) {
-    const repository = isAdmin
+    const repository = isOwner
       ? this.adminProfileRepository
       : this.profileRepository;
 
@@ -110,8 +110,8 @@ export class ProfileService {
     };
   }
 
-  remove(id: number, isAdmin: boolean) {
-    const repository = isAdmin
+  remove(id: number, isOwner: boolean) {
+    const repository = isOwner
       ? this.adminProfileRepository
       : this.profileRepository;
 

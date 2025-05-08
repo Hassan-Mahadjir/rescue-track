@@ -10,5 +10,5 @@ export class CreateUserDto {
 
   @IsBoolean()
   @IsOptional()
-  isAdmin?: boolean;
+  isOwner?: boolean;
 }

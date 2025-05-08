@@ -16,11 +16,11 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { ParseIdPipe } from './pipes/parseIdpipe';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth/jwt-auth.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
-import { Role } from 'src/auth/enums/role.enums';
 import { ProfileService } from 'src/profile/profile.service';
 import { UpdateProfileDto } from 'src/profile/dto/update-profile.dto';
 import { CreateProfileDto } from 'src/profile/dto/create-profile.dto';
 import { Public } from 'src/auth/decorators/public.decorator';
+import { UserRole } from 'src/enums/user-role.enum';
 
 @Controller('user')
 export class UserController {
@@ -74,7 +74,7 @@ export class UserController {
     return this.userService.update(id, updateUserDto);
   }
 
-  @Roles(Role.ADMIN)
+  @Roles(UserRole.ADMIN)
   @Patch('manage-profile/:id')
   async updateProfileAdmin(
     @Body() updateProfileDto: UpdateUserDto,
@@ -97,7 +97,7 @@ export class UserController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Roles(Role.ADMIN)
+  @Roles(UserRole.ADMIN)
   @Delete(':id')
   remove(@Param('id', ParseIdPipe) id) {
     return this.userService.remove(id);
