@@ -8,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { User } from './user.entity';
+import { Owner } from './owner.entity';
 import { Gender } from 'src/enums/gender.enums';
 
 @Entity()
@@ -50,7 +50,7 @@ export class Profile {
   updatedAt: Date;
 
   // Relationship with User (Employee Profile)
-  @OneToOne(() => User, (user) => user.profile)
-  @JoinColumn({ name: 'EMPLOYEE_PROFILE' })
-  user: User;
+  @OneToOne(() => Owner, (owner) => owner.profile)
+  @JoinColumn()
+  user: Owner;
 }

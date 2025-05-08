@@ -12,7 +12,7 @@ import { Role } from 'src/auth/enums/role.enums';
 import { Profile } from './profile.entity';
 
 @Entity()
-export class User {
+export class Owner {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -38,7 +38,7 @@ export class User {
   otpCodeExpiry: Date;
 
   @Column({ default: false })
-  isVerified: boolean;
+  isApproved: boolean;
 
   // Relationship with PROFILE
   @OneToOne(() => Profile, (profile) => profile.user)

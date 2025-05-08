@@ -17,11 +17,11 @@ import { Public } from 'src/auth/decorators/public.decorator';
 import { UpdateAdminProfileDto } from 'src/profile/dto/update-admin-profile.dto';
 import { ProfileService } from 'src/profile/profile.service';
 import { ParseIdPipe } from 'src/user/pipes/parseIdpipe';
+
+import { RolesJwtAuthGuard } from 'src/auth/guards/role-jwt/role-jwt.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enums';
-import { RolesJwtAuthGuard } from 'src/auth/guards/role-jwt/role-jwt.guard';
 
-@Roles(Role.OWNER)
 @Controller('administrator')
 export class AdministratorController {
   constructor(
@@ -61,4 +61,11 @@ export class AdministratorController {
   @UseGuards(RolesJwtAuthGuard)
   @Delete(':id')
   remove(@Param('id', ParseIdPipe) id) {}
+
+  @UseGuards(RolesJwtAuthGuard)
+  @Roles(Role.TENANT)
+  @Patch('approve-organization/:id')
+  approveOrganization(@Param('id', ParseIdPipe) id) {
+    return this.administratorService.approveOrganization(+id);
+  }
 }

@@ -25,4 +25,24 @@ export class MailService {
     // console.log(this.configService.get('GOOGLE_MAIL_PASSWORD'));
     await this.transporter.sendMail(mailOptions);
   }
+
+  async sendWaitListEmail(to: string) {
+    const mailOptions = {
+      from: process.env.GOOGLE_MAIL_USER,
+      to: to,
+      subject: 'Waitlist',
+      html: `<p>Thank you for your interest in our service. We appreciate your patience as we work to onboard new users. We will notify you as soon as we are ready to welcome you aboard.</p>`,
+    };
+    await this.transporter.sendMail(mailOptions);
+  }
+
+  async sendApprovalEmail(to: string) {
+    const mailOptions = {
+      from: process.env.GOOGLE_MAIL_USER,
+      to: to,
+      subject: 'Approval',
+      html: `<p>Your organization has been approved. You may now invite your staff and begin utilizing our platform's features.</p>`,
+    };
+    await this.transporter.sendMail(mailOptions);
+  }
 }

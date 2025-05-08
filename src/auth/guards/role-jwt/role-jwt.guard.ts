@@ -6,31 +6,27 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtAuthGuard } from '../jwt-auth/jwt-auth.guard';
-import { Role } from 'src/auth/enums/role.enums';
+import { AllowedRoles } from 'src/auth/types/auth-jwtPayload'; // Union of Role and UserRole
 
 @Injectable()
 export class RolesJwtAuthGuard extends JwtAuthGuard implements CanActivate {
-  constructor(reflector: Reflector) {
+  constructor(protected reflector: Reflector) {
     super(reflector);
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    // Call the parent guard's canActivate to validate the JWT
     const isJwtValid = await super.canActivate(context);
     if (!isJwtValid) return false;
 
-    // Get the required roles from the route's metadata
-    const requiredRoles = this.reflector.get<Role[]>(
+    const requiredRoles = this.reflector.get<AllowedRoles[]>(
       'roles',
       context.getHandler(),
     );
-    if (!requiredRoles) return true; // If no roles are specified, allow access
+    if (!requiredRoles) return true;
 
-    // Get the user from the request
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
-    // Check if the user's role matches the required roles
     if (!requiredRoles.includes(user.role)) {
       throw new ForbiddenException(
         'You do not have permission to access this resource',
