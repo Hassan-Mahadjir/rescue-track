@@ -6,8 +6,10 @@ import {
   UpdateDateColumn,
   OneToOne,
   JoinColumn,
+  BeforeInsert,
 } from 'typeorm';
 import { Owner } from './owner.entity';
+import * as argon2 from 'argon2';
 
 @Entity()
 export class Database {

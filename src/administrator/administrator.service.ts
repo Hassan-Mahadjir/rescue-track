@@ -17,6 +17,7 @@ import { HttpStatus } from '@nestjs/common';
 import { MailService } from 'src/mail/mail.service';
 import { Database } from 'src/entities/main/database.entity';
 import { CreateDatabaseDto } from './dto/create-database.dto';
+import * as argon2 from 'argon2';
 
 @Injectable()
 export class AdministratorService {
@@ -169,6 +170,19 @@ export class AdministratorService {
       status: HttpStatus.CREATED,
       message: 'Database access granted successfully',
       data: database,
+    };
+  }
+
+  async findDatabaseByName(name: string) {
+    const databaseInfo = await this.databaseRepository.findOne({
+      where: { name: name },
+    });
+    if (!databaseInfo)
+      throw new NotFoundException(`Database with name: ${name} not found`);
+    return {
+      status: HttpStatus.OK,
+      message: 'Database found successfully',
+      data: databaseInfo,
     };
   }
 }
