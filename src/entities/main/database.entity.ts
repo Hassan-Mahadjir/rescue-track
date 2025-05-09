@@ -4,10 +4,13 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToOne,
+  JoinColumn,
 } from 'typeorm';
+import { Owner } from './owner.entity';
 
-@Entity('tenants')
-export class Tenant {
+@Entity()
+export class Database {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -25,4 +28,8 @@ export class Tenant {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToOne(() => Owner, (owner) => owner.database)
+  @JoinColumn()
+  owner: Owner;
 }

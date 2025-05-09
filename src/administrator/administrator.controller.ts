@@ -21,6 +21,7 @@ import { ParseIdPipe } from 'src/user/pipes/parseIdpipe';
 import { RolesJwtAuthGuard } from 'src/auth/guards/role-jwt/role-jwt.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enums';
+import { CreateDatabaseDto } from './dto/create-database.dto';
 
 @Controller('administrator')
 export class AdministratorController {
@@ -63,9 +64,22 @@ export class AdministratorController {
   remove(@Param('id', ParseIdPipe) id) {}
 
   @UseGuards(RolesJwtAuthGuard)
-  @Roles(Role.TENANT)
+  @Roles(Role.DEVELOPER)
   @Patch('approve-organization/:id')
   approveOrganization(@Param('id', ParseIdPipe) id) {
     return this.administratorService.approveOrganization(+id);
+  }
+
+  @UseGuards(RolesJwtAuthGuard)
+  @Roles(Role.DEVELOPER)
+  @Post('grant-database-access/:id')
+  grantDatabaseAccess(
+    @Param('id', ParseIdPipe) id,
+    @Body() createDatabaseDto: CreateDatabaseDto,
+  ) {
+    return this.administratorService.grantDatabaseAccess(
+      +id,
+      createDatabaseDto,
+    );
   }
 }

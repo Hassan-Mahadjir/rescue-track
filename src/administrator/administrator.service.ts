@@ -2,6 +2,7 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -14,6 +15,8 @@ import { Gender } from 'src/enums/gender.enums';
 import { Nationality } from 'src/enums/nationality.enums';
 import { HttpStatus } from '@nestjs/common';
 import { MailService } from 'src/mail/mail.service';
+import { Database } from 'src/entities/main/database.entity';
+import { CreateDatabaseDto } from './dto/create-database.dto';
 
 @Injectable()
 export class AdministratorService {
@@ -23,6 +26,8 @@ export class AdministratorService {
     @InjectRepository(OwnerProfile, 'primary')
     private ownerProfileRepository: Repository<OwnerProfile>,
     private mailService: MailService,
+    @InjectRepository(Database, 'primary')
+    private databaseRepository: Repository<Database>,
   ) {}
 
   async createAdmin(
@@ -131,6 +136,39 @@ export class AdministratorService {
       status: HttpStatus.OK,
       message: 'Organization approved successfully',
       data: approved_organization,
+    };
+  }
+
+  async grantDatabaseAccess(id: number, createDatabaseDto: CreateDatabaseDto) {
+    const organization = await this.ownerRepository.findOne({
+      where: { id },
+    });
+    if (!organization) {
+      throw new NotFoundException(`Owner with ID: ${id} not found`);
+    }
+
+    if (!organization.isApproved) {
+      throw new UnauthorizedException('Organization not approved yet');
+    }
+
+    const existingDatabase = await this.databaseRepository.findOne({
+      where: { name: createDatabaseDto.name },
+    });
+    if (existingDatabase) {
+      throw new ConflictException('Database name already exists');
+    }
+
+    const database = this.databaseRepository.create({
+      ...createDatabaseDto,
+      owner: organization,
+    });
+
+    await this.databaseRepository.save(database);
+
+    return {
+      status: HttpStatus.CREATED,
+      message: 'Database access granted successfully',
+      data: database,
     };
   }
 }

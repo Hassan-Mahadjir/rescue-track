@@ -10,6 +10,7 @@ import {
 import * as argon2 from 'argon2';
 import { Role } from 'src/auth/enums/role.enums';
 import { Profile } from './profile.entity';
+import { Database } from './database.entity';
 
 @Entity()
 export class Owner {
@@ -43,6 +44,10 @@ export class Owner {
   // Relationship with PROFILE
   @OneToOne(() => Profile, (profile) => profile.user)
   profile: Profile;
+
+  // Relationship with Database
+  @OneToOne(() => Database, (database) => database.owner, { nullable: true })
+  database: Database;
 
   @BeforeInsert()
   async hashPassword() {

@@ -23,10 +23,11 @@ import { MailService } from 'src/mail/mail.service';
 import { Profile as TenantProfile } from 'src/entities/profile.entity';
 import { Profile as OwnerProfile } from 'src/entities/main/profile.entity';
 import { AdministratorService } from 'src/administrator/administrator.service';
+import { Database } from 'src/entities/main/database.entity';
 @Module({
   imports: [
     TypeOrmModule.forFeature([TenantUser, TenantProfile], 'secondary'),
-    TypeOrmModule.forFeature([Owner, OwnerProfile], 'primary'),
+    TypeOrmModule.forFeature([Owner, OwnerProfile, Database], 'primary'),
     JwtModule.registerAsync(jwtConfig.asProvider()),
     ConfigModule.forFeature(jwtConfig),
     ConfigModule.forFeature(refreshJwtConfig),
