@@ -40,7 +40,7 @@ export class RunReportService {
     const newRunReport = this.runReportRepository.create({
       ...createRunReportDto,
       patient: patient,
-      initiatedBy: initiatedPerson,
+      // initiatedBy: initiatedPerson,
     });
 
     const savedRunReport = await this.runReportRepository.save(newRunReport);
@@ -97,7 +97,7 @@ export class RunReportService {
       where: {
         id: id,
         createAt: MoreThan(twentyFourHoursAgo),
-        initiatedBy: { id: userId },
+        // initiatedBy: { id: userId },
       },
       relations: [
         'patient',
@@ -123,7 +123,7 @@ export class RunReportService {
 
     const runReports = await this.runReportRepository.find({
       where: {
-        initiatedBy: createdByUser,
+        // initiatedBy: createdByUser,
         createAt: MoreThan(twentyFourHoursAgo),
       },
       relations: [
@@ -177,10 +177,10 @@ export class RunReportService {
     Object.assign(report, updateRunReportDto);
     const updatedReport = await this.runReportRepository.save(report);
 
-    const updateBy = await this.userService.findOne(report.initiatedBy.id);
+    // const updateBy = await this.userService.findOne(report.initiatedBy.id);
 
     const history = this.updateHistoryRepository.create({
-      updatedBy: updateBy,
+      // updatedBy: updateBy,
       runReport: report,
       updateFields: updateRunReportDto,
     });

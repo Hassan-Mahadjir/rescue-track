@@ -42,7 +42,7 @@ export class PatientService {
       gender: createPatientDto.gender as Gender,
       nationality: createPatientDto.nationality as Nationality,
       status: createPatientDto.status as Status,
-      responsible: responsible,
+      // responsible: responsible,
     });
 
     const savedPatient = await this.patientRepository.save(newPatient);
@@ -93,45 +93,45 @@ export class PatientService {
     };
   }
 
-  async getPatient(patientId: number, responsibleId: number) {
-    const patient = await this.patientRepository.findOne({
-      where: { id: patientId, responsible: { id: responsibleId } },
-      relations: ['responsible', 'updateHistory'],
-    });
+  // async getPatient(patientId: number, responsibleId: number) {
+  //   const patient = await this.patientRepository.findOne({
+  //     where: { id: patientId, responsible: { id: responsibleId } },
+  //     relations: ['responsible', 'updateHistory'],
+  //   });
 
-    if (!patient) {
-      return {
-        status: HttpStatus.NOT_FOUND,
-        message: 'Patient not found',
-        data: null,
-      };
-    }
-    return {
-      status: HttpStatus.FOUND,
-      message: 'Patient retrieved successfully',
-      data: patient,
-    };
-  }
+  //   if (!patient) {
+  //     return {
+  //       status: HttpStatus.NOT_FOUND,
+  //       message: 'Patient not found',
+  //       data: null,
+  //     };
+  //   }
+  //   return {
+  //     status: HttpStatus.FOUND,
+  //     message: 'Patient retrieved successfully',
+  //     data: patient,
+  //   };
+  // }
 
-  async getPatients(responsibleId: number) {
-    const patients = await this.patientRepository.find({
-      where: { responsible: { id: responsibleId } },
-      relations: ['responsible', 'updateHistory'],
-    });
+  // async getPatients(responsibleId: number) {
+  //   const patients = await this.patientRepository.find({
+  //     where: { responsible: { id: responsibleId } },
+  //     relations: ['responsible', 'updateHistory'],
+  //   });
 
-    if (!patients || patients.length === 0) {
-      return {
-        status: HttpStatus.NOT_FOUND,
-        message: 'No patients found',
-        data: null,
-      };
-    }
-    return {
-      status: HttpStatus.FOUND,
-      message: 'Patients retrieved successfully',
-      data: patients,
-    };
-  }
+  //   if (!patients || patients.length === 0) {
+  //     return {
+  //       status: HttpStatus.NOT_FOUND,
+  //       message: 'No patients found',
+  //       data: null,
+  //     };
+  //   }
+  //   return {
+  //     status: HttpStatus.FOUND,
+  //     message: 'Patients retrieved successfully',
+  //     data: patients,
+  //   };
+  // }
 
   async update(id: number, updatePatientDto: UpdatePatientDto, userId: number) {
     const existingPatient = await this.patientRepository.findOne({
@@ -153,7 +153,7 @@ export class PatientService {
         throw new BadRequestException('New responsible user not found');
       }
 
-      existingPatient.responsible = newResponsible;
+      // existingPatient.responsible = newResponsible;
     }
 
     // Merge the updates into the existing patient
@@ -175,7 +175,7 @@ export class PatientService {
 
     const history = this.patientUpdateHistoryRepository.create({
       patient: updatedPatient,
-      updatedBy: updatedByUser,
+      // updatedBy: updatedByUser,
       updateFields: updatePatientDto,
     });
 

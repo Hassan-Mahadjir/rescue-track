@@ -1,6 +1,7 @@
 import {
   IsDate,
   IsEnum,
+  IsNumber,
   IsOptional,
   IsPhoneNumber,
   IsString,
@@ -31,6 +32,10 @@ export class CreateProfileDto {
   @IsUrl()
   @IsOptional()
   avatar: string;
+
+  @IsString()
+  @IsOptional()
+  hospitalID?: string;
 
   @IsEnum(Nationality)
   @IsOptional()

@@ -7,20 +7,23 @@ import {
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/entities/user.entity';
+import { User } from 'src/entities/main/user.entity';
 import { Repository } from 'typeorm';
-import { Profile } from 'src/entities/profile.entity';
+import { Profile } from 'src/entities/main/profile.entity';
 import { CreateProfileDto } from 'src/profile/dto/create-profile.dto';
 import { Gender } from 'src/enums/gender.enums';
 import { Nationality } from 'src/enums/nationality.enums';
+import { Hospital } from 'src/entities/main/hospital.entity';
 
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRepository(User, 'secondary')
+    @InjectRepository(User, 'primary')
     private UserRepo: Repository<User>,
-    @InjectRepository(Profile, 'secondary')
+    @InjectRepository(Profile, 'primary')
     private profileRepository: Repository<Profile>,
+    @InjectRepository(Hospital, 'primary')
+    private hospitalRepository: Repository<Hospital>,
   ) {}
 
   async updateHashedRefreshToken(userId: number, refreshToken: string | null) {
@@ -41,9 +44,18 @@ export class UserService {
       throw new ConflictException('Email already exists');
     }
 
+    const hospital = await this.hospitalRepository.findOne({
+      where: { id: createProfileDto.hospitalID },
+    });
+
+    if (!hospital) {
+      throw new NotFoundException('Hospital not found');
+    }
+
     const user = await this.UserRepo.create({
       ...createUserDto,
       email: createUserDto.email.toLocaleLowerCase(),
+      hospital: hospital,
     });
     await this.UserRepo.save(user);
 

@@ -9,20 +9,19 @@ import {
 import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Profile as TenantProfile } from 'src/entities/profile.entity';
+import { Profile } from 'src/entities/main/profile.entity';
 import { Repository } from 'typeorm';
 import { UserService } from 'src/user/user.service';
 import { Gender } from '../enums/gender.enums';
 import { Nationality } from '../enums/nationality.enums';
 import { Profile as AdminProfile } from 'src/entities/main/profile.entity';
-import { AdministratorService } from 'src/administrator/administrator.service';
 
 import { UpdateAdminProfileDto } from './dto/update-admin-profile.dto';
 @Injectable()
 export class ProfileService {
   constructor(
-    @InjectRepository(TenantProfile, 'secondary')
-    private profileRepository: Repository<TenantProfile>,
+    @InjectRepository(Profile, 'primary')
+    private profileRepository: Repository<Profile>,
     private userService: UserService,
     @InjectRepository(AdminProfile, 'primary')
     private adminProfileRepository: Repository<AdminProfile>,

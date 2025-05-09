@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { Owner } from './owner.entity';
 import { Gender } from 'src/enums/gender.enums';
+import { User } from './user.entity';
 
 @Entity()
 export class Profile {
@@ -52,5 +53,10 @@ export class Profile {
   // Relationship with User (Employee Profile)
   @OneToOne(() => Owner, (owner) => owner.profile)
   @JoinColumn()
-  user: Owner;
+  owner: Owner;
+
+  // Relationship with User (Employee Profile)
+  @OneToOne(() => User, (user) => user.profile)
+  @JoinColumn({ name: 'EMPLOYEE_PROFILE' })
+  user: User;
 }

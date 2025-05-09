@@ -48,7 +48,7 @@ export class PatientController {
       throw new BadRequestException('Invalid user id');
     }
 
-    return this.patientService.getPatient(+id, userId);
+    // return this.patientService.getPatient(+id, userId);
   }
 
   // This endpoint is used to get all patients for the logged-in user
@@ -59,7 +59,7 @@ export class PatientController {
       throw new BadRequestException('Invalid user id');
     }
 
-    return this.patientService.getPatients(userId);
+    // return this.patientService.getPatients(userId);
   }
 
   @Patch(':id')

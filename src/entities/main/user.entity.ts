@@ -4,18 +4,18 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToMany,
+  ManyToOne,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
 import * as argon2 from 'argon2';
-import { Role } from 'src/auth/enums/role.enums';
 import { UserRole } from 'src/enums/user-role.enum';
 import { Profile } from './profile.entity';
-import { Patient } from './patient.entity';
-import { PatientCareReport } from './patient-care-report.entity';
-import { RunReport } from './run-report.entity';
+import { Hospital } from './hospital.entity';
+import { Owner } from './owner.entity';
 
 @Entity()
 export class User {
@@ -50,21 +50,13 @@ export class User {
   @OneToOne(() => Profile, (profile) => profile.user)
   profile: Profile;
 
-  // Relationship with PATIENT
-  @OneToMany(() => Patient, (patient) => patient.responsible)
-  patients: Patient[];
+  // Relationship with OWNER
+  @OneToOne(() => Owner, (owner) => owner.profile)
+  owner: Owner;
 
-  // Relationship with PATIENT UPDATE HISTORY
-  @OneToMany(() => Patient, (patient) => patient.updateHistory)
-  updateHistory: Patient[];
-
-  // Relationship with PCR(Pateint Care Report)
-  @OneToMany(() => PatientCareReport, (PCR) => PCR.initiatedBy)
-  PCRs: PatientCareReport;
-
-  // Relationship with Run Report
-  @OneToMany(() => RunReport, (run) => run.initiatedBy)
-  runReports: RunReport;
+  // Relationship with HOSPITAL
+  @ManyToOne(() => Hospital, (hospital) => hospital.users)
+  hospital: Hospital;
 
   @BeforeInsert()
   async hashPassword() {

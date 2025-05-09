@@ -12,7 +12,6 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { User } from './user.entity';
 import { Patient } from './patient.entity';
 import { UpdateHistory } from './updateHistory.entity';
 import { PatientCareReport } from './patient-care-report.entity';
@@ -66,9 +65,9 @@ export class RunReport {
   createAt: Date;
 
   //   relationship with USER (who create run-report)
-  @ManyToOne(() => User, (user) => user.runReports)
-  @JoinColumn()
-  initiatedBy: User;
+  // @ManyToOne(() => User, (user) => user.runReports)
+  // @JoinColumn()
+  // initiatedBy: User;
 
   // Relationship with Patient
   @ManyToOne(() => Patient, (patient) => patient.patientRunReport)

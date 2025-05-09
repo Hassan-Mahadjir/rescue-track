@@ -10,14 +10,12 @@ import { Owner } from 'src/entities/main/owner.entity';
 import { Profile as OwnerProfile } from 'src/entities/main/profile.entity';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { CreateProfileDto } from 'src/profile/dto/create-profile.dto';
-import { Role } from 'src/auth/enums/role.enums';
 import { Gender } from 'src/enums/gender.enums';
 import { Nationality } from 'src/enums/nationality.enums';
 import { HttpStatus } from '@nestjs/common';
 import { MailService } from 'src/mail/mail.service';
-import { Database } from 'src/entities/main/database.entity';
+import { Hospital } from 'src/entities/main/hospital.entity';
 import { CreateDatabaseDto } from './dto/create-database.dto';
-import * as argon2 from 'argon2';
 
 @Injectable()
 export class AdministratorService {
@@ -27,8 +25,8 @@ export class AdministratorService {
     @InjectRepository(OwnerProfile, 'primary')
     private ownerProfileRepository: Repository<OwnerProfile>,
     private mailService: MailService,
-    @InjectRepository(Database, 'primary')
-    private databaseRepository: Repository<Database>,
+    @InjectRepository(Hospital, 'primary')
+    private databaseRepository: Repository<Hospital>,
   ) {}
 
   async createAdmin(
@@ -73,7 +71,7 @@ export class AdministratorService {
       ...createProfileDto,
       gender: createProfileDto.gender as Gender,
       nationality: createProfileDto.nationality as Nationality,
-      user,
+      owner: user,
     });
 
     const profile = await this.ownerProfileRepository.save(newProfile);

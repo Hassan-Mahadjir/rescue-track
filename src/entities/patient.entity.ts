@@ -5,12 +5,9 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinColumn,
-  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { User } from './user.entity';
 import { PatientCareReport } from './patient-care-report.entity';
 import { Eligibility } from 'src/enums/eligibility.enum';
 import { RunReport } from './run-report.entity';
@@ -60,13 +57,11 @@ export class Patient {
   @CreateDateColumn()
   createdAt: Date;
 
-  // @UpdateDateColumn()
-  // updatedAt: Date;
+  @Column()
+  hospitalId: number;
 
-  //   Relationship with User (Employee Profile)
-  @ManyToOne(() => User, (user) => user.patients)
-  @JoinColumn({ name: 'RESPONSIBLE' })
-  responsible: User;
+  @Column()
+  responsibleUserId: number;
 
   // Relationship with PatientUpdateHistory
   @OneToMany(() => UpdateHistory, (history) => history.patient)
@@ -76,7 +71,7 @@ export class Patient {
   @OneToMany(() => PatientCareReport, (report) => report.patient)
   patientCareReport: PatientCareReport[];
 
-  // Relationship with PatientCareReport
+  // Relationship with RunReport
   @OneToMany(() => RunReport, (report) => report.patient)
   patientRunReport: RunReport[];
 }

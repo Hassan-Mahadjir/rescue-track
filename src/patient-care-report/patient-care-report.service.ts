@@ -95,7 +95,7 @@ export class PatientCareReportService {
       allergies: createPatientCareReportDto.allergies.map((a) =>
         this.allergyRepository.create(a),
       ),
-      initiatedBy: initiatedPerson,
+      // initiatedBy: initiatedPerson,
       runReport,
     });
 
@@ -157,7 +157,7 @@ export class PatientCareReportService {
       where: {
         id: id,
         createdAt: MoreThan(twentyFourHoursAgo),
-        initiatedBy: { id: userId },
+        // initiatedBy: { id: userId },
       },
       relations: [
         'treatments',
@@ -184,7 +184,7 @@ export class PatientCareReportService {
 
     const PCRs = await this.PCRRepository.find({
       where: {
-        initiatedBy: createdByUser,
+        // initiatedBy: createdByUser,
         createdAt: MoreThan(twentyFourHoursAgo),
       },
       relations: ['treatments'],
@@ -244,10 +244,10 @@ export class PatientCareReportService {
     }
     const updatedReport = await this.PCRRepository.save(report);
 
-    const updateBy = await this.userService.findOne(report.initiatedBy.id);
+    // const updateBy = await this.userService.findOne(report.initiatedBy.id);
 
     const history = this.updateHistoryRepository.create({
-      updatedBy: updateBy,
+      // updatedBy: updateBy,
       patientCareReport: report,
       updateFields: updatePatientCareReportDto,
     });

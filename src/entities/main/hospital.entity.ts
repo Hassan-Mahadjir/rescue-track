@@ -7,12 +7,15 @@ import {
   OneToOne,
   JoinColumn,
   BeforeInsert,
+  ManyToMany,
+  OneToMany,
 } from 'typeorm';
 import { Owner } from './owner.entity';
 import * as argon2 from 'argon2';
+import { User } from './user.entity';
 
 @Entity()
-export class Database {
+export class Hospital {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -25,13 +28,16 @@ export class Database {
   @Column({ default: true })
   isActive: boolean;
 
-  @CreateDateColumn()
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
-  @UpdateDateColumn()
-  updatedAt: Date;
-
-  @OneToOne(() => Owner, (owner) => owner.database)
+  // Relationship with Owner
+  @OneToOne(() => Owner, (owner) => owner.hospital)
   @JoinColumn()
   owner: Owner;
+
+  // Relationship with User
+  @OneToMany(() => User, (user) => user.hospital)
+  @JoinColumn()
+  users: User[];
 }

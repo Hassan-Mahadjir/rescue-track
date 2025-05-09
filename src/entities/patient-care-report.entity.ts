@@ -10,7 +10,6 @@ import {
 } from 'typeorm';
 import { Patient } from './patient.entity';
 import { Treatment } from './treatment.entity';
-import { User } from './user.entity';
 import { Condition } from 'src/enums/condition.enums';
 import { UpdateHistory } from './updateHistory.entity';
 import { RunReport } from './run-report.entity';
@@ -51,9 +50,9 @@ export class PatientCareReport {
   treatments: Treatment[];
 
   // Relationship with USER(Who generated the report)
-  @ManyToOne(() => User, (user) => user.PCRs)
-  @JoinColumn()
-  initiatedBy: User;
+  // @ManyToOne(() => User, (user) => user.PCRs)
+  // @JoinColumn()
+  // initiatedBy: User;
 
   // Relationship with Run-Report
   @OneToOne(() => RunReport, (runReport) => runReport.patientCareReport, {

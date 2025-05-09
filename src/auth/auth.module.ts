@@ -4,7 +4,6 @@ import { AuthController } from './auth.controller';
 import { UserService } from 'src/user/user.service';
 import { LocalStrategy } from './strategies/local.strategy';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User as TenantUser } from 'src/entities/user.entity';
 import { Owner } from 'src/entities/main/owner.entity';
 import { JwtModule } from '@nestjs/jwt';
 import jwtConfig from './config/jwt.config';
@@ -20,14 +19,13 @@ import { GoogleStrategy } from './strategies/google.strategy';
 import { MicrosoftStrategy } from './strategies/microsoft.strategy';
 import microsoftOauthConfig from './config/microsoft-oauth.config';
 import { MailService } from 'src/mail/mail.service';
-import { Profile as TenantProfile } from 'src/entities/profile.entity';
-import { Profile as OwnerProfile } from 'src/entities/main/profile.entity';
+import { Profile } from 'src/entities/main/profile.entity';
+import { User } from 'src/entities/main/user.entity';
 import { AdministratorService } from 'src/administrator/administrator.service';
-import { Database } from 'src/entities/main/database.entity';
+import { Hospital } from 'src/entities/main/hospital.entity';
 @Module({
   imports: [
-    TypeOrmModule.forFeature([TenantUser, TenantProfile], 'secondary'),
-    TypeOrmModule.forFeature([Owner, OwnerProfile, Database], 'primary'),
+    TypeOrmModule.forFeature([Owner, Profile, Hospital, User], 'primary'),
     JwtModule.registerAsync(jwtConfig.asProvider()),
     ConfigModule.forFeature(jwtConfig),
     ConfigModule.forFeature(refreshJwtConfig),
