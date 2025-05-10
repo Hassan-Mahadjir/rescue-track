@@ -25,7 +25,9 @@ export class UpdateHistory {
   updatedById: number;
 
   // Relationship with Patient
-  @ManyToOne(() => Patient, (patient) => patient.updateHistory)
+  @ManyToOne(() => Patient, (patient) => patient.updateHistory, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn()
   patient: Patient;
   // Relationship with PatientCareReport
@@ -38,7 +40,9 @@ export class UpdateHistory {
   patientCareReport: PatientCareReport;
 
   // Relationship with run Report
-  @ManyToOne(() => RunReport, (report) => report.updateHistory)
+  @ManyToOne(() => RunReport, (report) => report.updateHistory, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn()
   runReport: RunReport;
 }

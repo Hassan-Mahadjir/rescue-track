@@ -108,6 +108,15 @@ export class UserService {
     return user;
   }
 
+  async findOneWithProfile(id: number) {
+    const user = await this.UserRepo.findOne({
+      where: { id },
+      relations: ['profile'],
+    });
+    if (!user) throw new NotFoundException(`User with ${id} not found`);
+    return user;
+  }
+
   async update(id: number, updateUserDto: UpdateUserDto) {
     return await this.UserRepo.update({ id }, updateUserDto);
   }

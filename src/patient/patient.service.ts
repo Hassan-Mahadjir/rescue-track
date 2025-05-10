@@ -85,9 +85,8 @@ export class PatientService extends BaseHospitalService {
     const patientRepository = await this.getRepository(Patient);
     const patient = await patientRepository.findOne({
       where: { id },
-      relations: ['responsible', 'updateHistory'],
+      relations: ['updateHistory'],
     });
-
     if (!patient) {
       return {
         status: HttpStatus.NOT_FOUND,
@@ -95,10 +94,15 @@ export class PatientService extends BaseHospitalService {
         data: null,
       };
     }
+
+    const responsible = await this.userService.findOneWithProfile(
+      patient?.responsibleUserId,
+    );
+
     return {
       status: HttpStatus.FOUND,
       message: 'Patient retrieved successfully',
-      data: patient,
+      data: { patient, responsible },
     };
   }
 
@@ -108,22 +112,10 @@ export class PatientService extends BaseHospitalService {
 
     const existingPatient = await patientRepository.findOne({
       where: { id },
-      relations: ['responsible'],
     });
 
     if (!existingPatient) {
       throw new NotFoundException('Patient not found');
-    }
-
-    // Check if new responsible is provided and valid
-    if (updatePatientDto.newResponsibleID) {
-      const newResponsible = await this.userService.findOne(
-        updatePatientDto.newResponsibleID,
-      );
-
-      if (!newResponsible) {
-        throw new BadRequestException('New responsible user not found');
-      }
     }
 
     // Merge the updates into the existing patient
@@ -134,11 +126,12 @@ export class PatientService extends BaseHospitalService {
         (updatePatientDto.nationality as Nationality) ||
         existingPatient.nationality,
       status: (updatePatientDto.status as Status) || existingPatient.status,
+      updatedById: userId,
     });
 
     const updatedPatient = await patientRepository.save(existingPatient);
 
-    const updatedByUser = await this.userService.findOne(userId);
+    const updatedByUser = await this.userService.findOneWithProfile(userId);
     if (!updatedByUser) {
       throw new NotFoundException('Updating user not found');
     }
@@ -146,6 +139,7 @@ export class PatientService extends BaseHospitalService {
     const history = updateHistoryRepository.create({
       patient: updatedPatient,
       updateFields: updatePatientDto,
+      updatedById: updatedByUser.id,
     });
 
     const savedupdate = await updateHistoryRepository.save(history);
@@ -159,12 +153,12 @@ export class PatientService extends BaseHospitalService {
 
   async remove(id: number) {
     const patientRepository = await this.getRepository(Patient);
+
     const patient = await patientRepository.findOne({ where: { id } });
     if (!patient) {
       throw new NotFoundException('Patient not found');
     }
-    patient.updateHistory = [];
-    await patientRepository.save(patient);
+
     await patientRepository.delete(id);
 
     return {

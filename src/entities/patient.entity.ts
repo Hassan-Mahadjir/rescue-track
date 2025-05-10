@@ -71,14 +71,20 @@ export class Patient {
   responsibleUserId: number;
 
   // Relationship with PatientUpdateHistory
-  @OneToMany(() => UpdateHistory, (history) => history.patient)
+  @OneToMany(() => UpdateHistory, (history) => history.patient, {
+    onDelete: 'CASCADE',
+  })
   updateHistory: UpdateHistory[];
 
   // Relationship with PatientCareReport
-  @OneToMany(() => PatientCareReport, (report) => report.patient)
+  @OneToMany(() => PatientCareReport, (report) => report.patient, {
+    onDelete: 'CASCADE',
+  })
   patientCareReport: PatientCareReport[];
 
   // Relationship with RunReport
-  @OneToMany(() => RunReport, (report) => report.patient)
+  @OneToMany(() => RunReport, (report) => report.patient, {
+    onDelete: 'CASCADE',
+  })
   patientRunReport: RunReport[];
 }

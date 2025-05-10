@@ -4,6 +4,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -22,12 +23,14 @@ import { RolesJwtAuthGuard } from 'src/auth/guards/role-jwt/role-jwt.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enums';
 import { CreateDatabaseDto } from './dto/create-database.dto';
+import { DatabaseConnectionService } from 'src/database/database.service';
 
 @Controller('administrator')
 export class AdministratorController {
   constructor(
     private readonly administratorService: AdministratorService,
     private profileService: ProfileService,
+    private databaseConnectionService: DatabaseConnectionService,
   ) {}
 
   @Public()
@@ -81,5 +84,16 @@ export class AdministratorController {
       +id,
       createDatabaseDto,
     );
+  }
+
+  @Post('reinitialize-databases')
+  @UseGuards(RolesJwtAuthGuard)
+  @Roles(Role.DEVELOPER)
+  async reinitializeDatabases() {
+    await this.databaseConnectionService.reinitializeAllConnections();
+    return {
+      status: HttpStatus.OK,
+      message: 'All database connections reinitialized successfully',
+    };
   }
 }
