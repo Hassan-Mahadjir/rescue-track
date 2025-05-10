@@ -7,26 +7,31 @@ import {
 } from '@nestjs/common';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Patient } from 'src/entities/patient.entity';
-import { Repository } from 'typeorm';
 import { Gender } from 'src/enums/gender.enums';
 import { Nationality } from 'src/enums/nationality.enums';
 import { Status } from 'src/enums/status.enums';
 import { UserService } from 'src/user/user.service';
 import { UpdateHistory } from 'src/entities/updateHistory.entity';
+import { Request } from 'express';
+import { DatabaseConnectionService } from 'src/database/database.service';
+import { BaseHospitalService } from 'src/database/base-hospital.service';
 
 @Injectable()
-export class PatientService {
+export class PatientService extends BaseHospitalService {
   constructor(
-    @InjectRepository(Patient, 'secondary')
-    private patientRepository: Repository<Patient>,
-    @InjectRepository(UpdateHistory, 'secondary')
-    private patientUpdateHistoryRepository: Repository<UpdateHistory>,
+    protected readonly request: Request,
+    protected readonly databaseConnectionService: DatabaseConnectionService,
     private userService: UserService,
-  ) {}
+  ) {
+    super(request, databaseConnectionService);
+  }
+
   async create(responsibleID: number, createPatientDto: CreatePatientDto) {
-    const existingPatient = await this.patientRepository.findOne({
+    const patientRepository = await this.getRepository(Patient);
+    const updateHistoryRepository = await this.getRepository(UpdateHistory);
+
+    const existingPatient = await patientRepository.findOne({
       where: { nationalID: createPatientDto.nationalID },
     });
 
@@ -37,7 +42,7 @@ export class PatientService {
     // get responsible user
     const responsible = await this.userService.findOne(responsibleID);
 
-    const newPatient = await this.patientRepository.create({
+    const newPatient = patientRepository.create({
       ...createPatientDto,
       gender: createPatientDto.gender as Gender,
       nationality: createPatientDto.nationality as Nationality,
@@ -47,7 +52,7 @@ export class PatientService {
       responsibleUserId: responsible.id,
     });
 
-    const savedPatient = await this.patientRepository.save(newPatient);
+    const savedPatient = await patientRepository.save(newPatient);
 
     return {
       status: HttpStatus.CREATED,
@@ -57,7 +62,8 @@ export class PatientService {
   }
 
   async findAll() {
-    const patients = await this.patientRepository.find({
+    const patientRepository = await this.getRepository(Patient);
+    const patients = await patientRepository.find({
       relations: ['updateHistory'],
     });
 
@@ -76,7 +82,8 @@ export class PatientService {
   }
 
   async findOne(id: number) {
-    const patient = await this.patientRepository.findOne({
+    const patientRepository = await this.getRepository(Patient);
+    const patient = await patientRepository.findOne({
       where: { id },
       relations: ['responsible', 'updateHistory'],
     });
@@ -95,48 +102,11 @@ export class PatientService {
     };
   }
 
-  // async getPatient(patientId: number, responsibleId: number) {
-  //   const patient = await this.patientRepository.findOne({
-  //     where: { id: patientId, responsible: { id: responsibleId } },
-  //     relations: ['responsible', 'updateHistory'],
-  //   });
-
-  //   if (!patient) {
-  //     return {
-  //       status: HttpStatus.NOT_FOUND,
-  //       message: 'Patient not found',
-  //       data: null,
-  //     };
-  //   }
-  //   return {
-  //     status: HttpStatus.FOUND,
-  //     message: 'Patient retrieved successfully',
-  //     data: patient,
-  //   };
-  // }
-
-  // async getPatients(responsibleId: number) {
-  //   const patients = await this.patientRepository.find({
-  //     where: { responsible: { id: responsibleId } },
-  //     relations: ['responsible', 'updateHistory'],
-  //   });
-
-  //   if (!patients || patients.length === 0) {
-  //     return {
-  //       status: HttpStatus.NOT_FOUND,
-  //       message: 'No patients found',
-  //       data: null,
-  //     };
-  //   }
-  //   return {
-  //     status: HttpStatus.FOUND,
-  //     message: 'Patients retrieved successfully',
-  //     data: patients,
-  //   };
-  // }
-
   async update(id: number, updatePatientDto: UpdatePatientDto, userId: number) {
-    const existingPatient = await this.patientRepository.findOne({
+    const patientRepository = await this.getRepository(Patient);
+    const updateHistoryRepository = await this.getRepository(UpdateHistory);
+
+    const existingPatient = await patientRepository.findOne({
       where: { id },
       relations: ['responsible'],
     });
@@ -154,8 +124,6 @@ export class PatientService {
       if (!newResponsible) {
         throw new BadRequestException('New responsible user not found');
       }
-
-      // existingPatient.responsible = newResponsible;
     }
 
     // Merge the updates into the existing patient
@@ -168,20 +136,19 @@ export class PatientService {
       status: (updatePatientDto.status as Status) || existingPatient.status,
     });
 
-    const updatedPatient = await this.patientRepository.save(existingPatient);
+    const updatedPatient = await patientRepository.save(existingPatient);
 
     const updatedByUser = await this.userService.findOne(userId);
     if (!updatedByUser) {
       throw new NotFoundException('Updating user not found');
     }
 
-    const history = this.patientUpdateHistoryRepository.create({
+    const history = updateHistoryRepository.create({
       patient: updatedPatient,
-      // updatedBy: updatedByUser,
       updateFields: updatePatientDto,
     });
 
-    const savedupdate = await this.patientUpdateHistoryRepository.save(history);
+    const savedupdate = await updateHistoryRepository.save(history);
 
     return {
       status: HttpStatus.OK,
@@ -191,13 +158,14 @@ export class PatientService {
   }
 
   async remove(id: number) {
-    const patient = await this.patientRepository.findOne({ where: { id } });
+    const patientRepository = await this.getRepository(Patient);
+    const patient = await patientRepository.findOne({ where: { id } });
     if (!patient) {
       throw new NotFoundException('Patient not found');
     }
     patient.updateHistory = [];
-    await this.patientRepository.save(patient);
-    await this.patientRepository.delete(id);
+    await patientRepository.save(patient);
+    await patientRepository.delete(id);
 
     return {
       status: HttpStatus.OK,

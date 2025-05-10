@@ -16,6 +16,7 @@ import { HttpStatus } from '@nestjs/common';
 import { MailService } from 'src/mail/mail.service';
 import { Hospital } from 'src/entities/main/hospital.entity';
 import { CreateDatabaseDto } from './dto/create-database.dto';
+import { DatabaseConnectionService } from 'src/database/database.service';
 
 @Injectable()
 export class AdministratorService {
@@ -27,6 +28,7 @@ export class AdministratorService {
     private mailService: MailService,
     @InjectRepository(Hospital, 'primary')
     private databaseRepository: Repository<Hospital>,
+    private databaseConnectionService: DatabaseConnectionService,
   ) {}
 
   async createAdmin(
@@ -162,13 +164,27 @@ export class AdministratorService {
       owner: organization,
     });
 
-    await this.databaseRepository.save(database);
+    const savedDatabase = await this.databaseRepository.save(database);
 
-    return {
-      status: HttpStatus.CREATED,
-      message: 'Database access granted successfully',
-      data: database,
-    };
+    try {
+      const connection =
+        await this.databaseConnectionService.getHospitalConnection(
+          savedDatabase.id,
+        );
+
+      if (!connection.isInitialized) {
+        await connection.initialize();
+      }
+
+      return {
+        status: HttpStatus.CREATED,
+        message: 'Database access granted and tables created successfully',
+        data: savedDatabase,
+      };
+    } catch (error) {
+      await this.databaseRepository.remove(savedDatabase);
+      throw new Error(`Failed to initialize database: ${error.message}`);
+    }
   }
 
   async findDatabaseByName(name: string) {

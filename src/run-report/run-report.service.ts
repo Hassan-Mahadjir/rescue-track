@@ -1,34 +1,35 @@
 import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateRunReportDto } from './dto/create-run-report.dto';
 import { UpdateRunReportDto } from './dto/update-run-report.dto';
-import { InjectRepository } from '@nestjs/typeorm';
 import { RunReport } from 'src/entities/run-report.entity';
-import { MoreThan, Repository } from 'typeorm';
+import { MoreThan } from 'typeorm';
 import { UserService } from 'src/user/user.service';
 import { UpdateHistory } from 'src/entities/updateHistory.entity';
 import { PatientCareReport } from 'src/entities/patient-care-report.entity';
 import { Patient } from 'src/entities/patient.entity';
+import { Request } from 'express';
+import { BaseHospitalService } from 'src/database/base-hospital.service';
+import { DatabaseConnectionService } from 'src/database/database.service';
 
 @Injectable()
-export class RunReportService {
+export class RunReportService extends BaseHospitalService {
   constructor(
-    @InjectRepository(RunReport, 'secondary')
-    private runReportRepository: Repository<RunReport>,
+    protected readonly request: Request,
+    protected readonly databaseConnectionService: DatabaseConnectionService,
     private userService: UserService,
-    @InjectRepository(UpdateHistory, 'secondary')
-    private updateHistoryRepository: Repository<UpdateHistory>,
-    @InjectRepository(PatientCareReport, 'secondary')
-    private PCRRepository: Repository<PatientCareReport>,
-    @InjectRepository(Patient, 'secondary')
-    private patientRepository: Repository<Patient>,
-  ) {}
+  ) {
+    super(request, databaseConnectionService);
+  }
 
   async create(
     initiatedPersonId: number,
     createRunReportDto: CreateRunReportDto,
   ) {
+    const runReportRepository = await this.getRepository(RunReport);
+    const patientRepository = await this.getRepository(Patient);
+
     const initiatedPerson = await this.userService.findOne(initiatedPersonId);
-    const patient = await this.patientRepository.findOne({
+    const patient = await patientRepository.findOne({
       where: { id: createRunReportDto.patientId },
     });
 
@@ -37,13 +38,12 @@ export class RunReportService {
         `Patient with ${createRunReportDto.patientId} not found`,
       );
 
-    const newRunReport = this.runReportRepository.create({
+    const newRunReport = runReportRepository.create({
       ...createRunReportDto,
       patient: patient,
-      // initiatedBy: initiatedPerson,
     });
 
-    const savedRunReport = await this.runReportRepository.save(newRunReport);
+    const savedRunReport = await runReportRepository.save(newRunReport);
 
     return {
       status: HttpStatus.CREATED,
@@ -53,7 +53,8 @@ export class RunReportService {
   }
 
   async findAll() {
-    const reports = await this.runReportRepository.find({
+    const runReportRepository = await this.getRepository(RunReport);
+    const reports = await runReportRepository.find({
       relations: [
         'initiatedBy.profile',
         'patient',
@@ -70,7 +71,8 @@ export class RunReportService {
   }
 
   async findOne(id: number) {
-    const report = await this.runReportRepository.findOne({
+    const runReportRepository = await this.getRepository(RunReport);
+    const report = await runReportRepository.findOne({
       where: { id: id },
       relations: [
         'initiatedBy.profile',
@@ -92,12 +94,12 @@ export class RunReportService {
   }
 
   async getReportFromLast24Hours(id: number, userId: number) {
+    const runReportRepository = await this.getRepository(RunReport);
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const report = await this.runReportRepository.findOne({
+    const report = await runReportRepository.findOne({
       where: {
         id: id,
         createAt: MoreThan(twentyFourHoursAgo),
-        // initiatedBy: { id: userId },
       },
       relations: [
         'patient',
@@ -118,12 +120,12 @@ export class RunReportService {
   }
 
   async getReportsFromLast24Hours(initiatedByID: number) {
+    const runReportRepository = await this.getRepository(RunReport);
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const createdByUser = await this.userService.findOne(initiatedByID);
 
-    const runReports = await this.runReportRepository.find({
+    const runReports = await runReportRepository.find({
       where: {
-        // initiatedBy: createdByUser,
         createAt: MoreThan(twentyFourHoursAgo),
       },
       relations: [
@@ -145,7 +147,11 @@ export class RunReportService {
   }
 
   async update(id: number, updateRunReportDto: UpdateRunReportDto) {
-    const report = await this.runReportRepository.findOne({
+    const runReportRepository = await this.getRepository(RunReport);
+    const patientRepository = await this.getRepository(Patient);
+    const updateHistoryRepository = await this.getRepository(UpdateHistory);
+
+    const report = await runReportRepository.findOne({
       where: { id: id },
       relations: [
         'patient',
@@ -161,7 +167,7 @@ export class RunReportService {
 
     // Optional: Update patient if patientId provided
     if (updateRunReportDto.patientId) {
-      const patient = await this.patientRepository.findOne({
+      const patient = await patientRepository.findOne({
         where: { id: updateRunReportDto.patientId },
       });
 
@@ -175,17 +181,14 @@ export class RunReportService {
 
     // Update the report with the new data
     Object.assign(report, updateRunReportDto);
-    const updatedReport = await this.runReportRepository.save(report);
+    const updatedReport = await runReportRepository.save(report);
 
-    // const updateBy = await this.userService.findOne(report.initiatedBy.id);
-
-    const history = this.updateHistoryRepository.create({
-      // updatedBy: updateBy,
+    const history = updateHistoryRepository.create({
       runReport: report,
       updateFields: updateRunReportDto,
     });
 
-    const savedUpdate = await this.updateHistoryRepository.save(history);
+    const savedUpdate = await updateHistoryRepository.save(history);
 
     return {
       status: HttpStatus.OK,
@@ -195,7 +198,10 @@ export class RunReportService {
   }
 
   async remove(id: number) {
-    const report = await this.runReportRepository.findOne({
+    const runReportRepository = await this.getRepository(RunReport);
+    const updateHistoryRepository = await this.getRepository(UpdateHistory);
+
+    const report = await runReportRepository.findOne({
       where: { id: id },
       relations: [
         'patient',
@@ -211,10 +217,10 @@ export class RunReportService {
     }
 
     if (report.updateHistory.length > 0) {
-      await this.updateHistoryRepository.remove(report.updateHistory);
+      await updateHistoryRepository.remove(report.updateHistory);
     }
 
-    await this.runReportRepository.remove(report);
+    await runReportRepository.remove(report);
 
     return {
       status: HttpStatus.OK,
@@ -223,8 +229,9 @@ export class RunReportService {
   }
 
   async getRecentReports() {
+    const runReportRepository = await this.getRepository(RunReport);
     // Get all run reports with their relations
-    const allReports = await this.runReportRepository.find({
+    const allReports = await runReportRepository.find({
       relations: [
         'patient',
         'initiatedBy.profile',

@@ -23,6 +23,7 @@ import { Profile } from 'src/entities/main/profile.entity';
 import { User } from 'src/entities/main/user.entity';
 import { AdministratorService } from 'src/administrator/administrator.service';
 import { Hospital } from 'src/entities/main/hospital.entity';
+import { DatabaseConnectionService } from 'src/database/database.service';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Owner, Profile, Hospital, User], 'primary'),
@@ -43,6 +44,7 @@ import { Hospital } from 'src/entities/main/hospital.entity';
     GoogleStrategy,
     MicrosoftStrategy,
     MailService,
+    DatabaseConnectionService,
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
   ],

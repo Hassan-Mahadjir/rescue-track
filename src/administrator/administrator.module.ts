@@ -7,6 +7,7 @@ import { Profile as OwnerProfile } from 'src/entities/main/profile.entity';
 import { ProfileModule } from 'src/profile/profile.module';
 import { MailModule } from 'src/mail/mail.module';
 import { Hospital } from 'src/entities/main/hospital.entity';
+import { DatabaseConnectionService } from 'src/database/database.service';
 
 @Module({
   imports: [
@@ -15,7 +16,7 @@ import { Hospital } from 'src/entities/main/hospital.entity';
     MailModule,
   ],
   controllers: [AdministratorController],
-  providers: [AdministratorService],
+  providers: [AdministratorService, DatabaseConnectionService],
   exports: [AdministratorService],
 })
 export class AdministratorModule {}
