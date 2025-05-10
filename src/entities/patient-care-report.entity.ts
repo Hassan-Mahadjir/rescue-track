@@ -7,6 +7,7 @@ import {
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Patient } from './patient.entity';
 import { Treatment } from './treatment.entity';
@@ -36,6 +37,18 @@ export class PatientCareReport {
   @CreateDateColumn()
   createdAt: Date;
 
+  @UpdateDateColumn()
+  updatedAt: Date;
+
+  @Column()
+  hospitalId: string;
+
+  @Column()
+  createdById: number;
+
+  @Column({ nullable: true })
+  updatedById: number;
+
   // Relationship with Patient
   @ManyToOne(() => Patient, (patient) => patient.patientCareReport)
   @JoinColumn()
@@ -48,11 +61,6 @@ export class PatientCareReport {
   //Relationship with Treatment
   @OneToMany(() => Treatment, (treatment) => treatment.PCR, { cascade: true })
   treatments: Treatment[];
-
-  // Relationship with USER(Who generated the report)
-  // @ManyToOne(() => User, (user) => user.PCRs)
-  // @JoinColumn()
-  // initiatedBy: User;
 
   // Relationship with Run-Report
   @OneToOne(() => RunReport, (runReport) => runReport.patientCareReport, {

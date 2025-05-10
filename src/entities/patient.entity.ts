@@ -7,6 +7,7 @@ import {
   Entity,
   OneToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { PatientCareReport } from './patient-care-report.entity';
 import { Eligibility } from 'src/enums/eligibility.enum';
@@ -58,7 +59,13 @@ export class Patient {
   createdAt: Date;
 
   @Column()
-  hospitalId: number;
+  hospitalId: string;
+
+  @Column()
+  createdById: number;
+
+  @Column({ nullable: true })
+  updatedById: number;
 
   @Column()
   responsibleUserId: number;

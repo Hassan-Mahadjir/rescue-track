@@ -90,8 +90,8 @@ export class AdministratorService {
     const user = await this.ownerRepository.findOne({
       where: { id },
       select: ['id', 'email', 'password', 'role', 'hashedRefreshToken'],
+      relations: ['hospital'],
     });
-
     if (!user) throw new NotFoundException(`User with ID: ${id} not found`);
 
     return user;

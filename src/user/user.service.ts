@@ -100,6 +100,7 @@ export class UserService {
     const user = await this.UserRepo.findOne({
       where: { id },
       select: ['id', 'email', 'password', 'role', 'hashedRefreshToken'],
+      relations: ['hospital'],
     });
 
     if (!user) throw new NotFoundException(`User with ${id} not found`);

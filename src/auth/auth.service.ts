@@ -75,7 +75,11 @@ export class AuthService {
       ? await this.administratorService.findOne(userId)
       : await this.userService.findOne(userId);
 
-    const payload: AuthJwtPayload = { sub: userId, role: user.role };
+    const payload: AuthJwtPayload = {
+      sub: userId,
+      role: user.role,
+      hospitalId: user.hospital.id,
+    };
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload),
@@ -150,7 +154,11 @@ export class AuthService {
       throw new UnauthorizedException('Invalid token or user not found.');
     }
 
-    const currentUser: CurrentUser = { id: user.id, role: user.role };
+    const currentUser: CurrentUser = {
+      id: user.id,
+      role: user.role,
+      hospitalId: user.hospital.id,
+    };
     return currentUser;
   }
 

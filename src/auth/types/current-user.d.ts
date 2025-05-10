@@ -6,4 +6,5 @@ export type AllowedRoles = Role | UserRole; // Union type for both enums
 export type CurrentUser = {
   id: number;
   role: AllowedRoles;
+  hospitalId: string;
 };

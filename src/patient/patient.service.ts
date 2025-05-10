@@ -42,7 +42,9 @@ export class PatientService {
       gender: createPatientDto.gender as Gender,
       nationality: createPatientDto.nationality as Nationality,
       status: createPatientDto.status as Status,
-      // responsible: responsible,
+      hospitalId: responsible.hospital.id,
+      createdById: responsible.id,
+      responsibleUserId: responsible.id,
     });
 
     const savedPatient = await this.patientRepository.save(newPatient);
@@ -56,7 +58,7 @@ export class PatientService {
 
   async findAll() {
     const patients = await this.patientRepository.find({
-      relations: ['responsible', 'updateHistory'],
+      relations: ['updateHistory'],
     });
 
     if (!patients || patients.length === 0) {

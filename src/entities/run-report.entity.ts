@@ -11,6 +11,7 @@ import {
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Patient } from './patient.entity';
 import { UpdateHistory } from './updateHistory.entity';
@@ -64,10 +65,17 @@ export class RunReport {
   @CreateDateColumn()
   createAt: Date;
 
-  //   relationship with USER (who create run-report)
-  // @ManyToOne(() => User, (user) => user.runReports)
-  // @JoinColumn()
-  // initiatedBy: User;
+  @UpdateDateColumn()
+  updatedAt: Date;
+
+  @Column()
+  hospitalId: string;
+
+  @Column()
+  createdById: number;
+
+  @Column({ nullable: true })
+  updatedById: number;
 
   // Relationship with Patient
   @ManyToOne(() => Patient, (patient) => patient.patientRunReport)
