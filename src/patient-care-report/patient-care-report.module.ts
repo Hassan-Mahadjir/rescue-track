@@ -13,6 +13,7 @@ import { RunReport } from 'src/entities/run-report.entity';
 import { MedicalCondition } from 'src/entities/medical-condition.entity';
 import { Allergy } from 'src/entities/allergy.entity';
 import { Hospital } from 'src/entities/main/hospital.entity';
+import { DatabaseConnectionService } from 'src/database/database.service';
 @Module({
   imports: [
     TypeOrmModule.forFeature(
@@ -30,6 +31,6 @@ import { Hospital } from 'src/entities/main/hospital.entity';
     TypeOrmModule.forFeature([User, Profile, Hospital], 'primary'),
   ],
   controllers: [PatientCareReportController],
-  providers: [PatientCareReportService, UserService],
+  providers: [PatientCareReportService, UserService, DatabaseConnectionService],
 })
 export class PatientCareReportModule {}

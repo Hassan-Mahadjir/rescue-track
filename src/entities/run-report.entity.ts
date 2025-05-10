@@ -75,7 +75,9 @@ export class RunReport {
   updatedById: number;
 
   // Relationship with Patient
-  @ManyToOne(() => Patient, (patient) => patient.patientRunReport)
+  @ManyToOne(() => Patient, (patient) => patient.patientRunReport, {
+    cascade: true,
+  })
   @JoinColumn()
   patient: Patient;
 
@@ -83,7 +85,7 @@ export class RunReport {
   updateHistory: UpdateHistory[];
 
   // Relationship with PCR
-  @OneToOne(() => PatientCareReport, (PCR) => PCR)
+  @OneToOne(() => PatientCareReport, (PCR) => PCR, { nullable: true })
   @JoinColumn()
-  patientCareReport: PatientCareReport;
+  patientCareReport: PatientCareReport | null;
 }

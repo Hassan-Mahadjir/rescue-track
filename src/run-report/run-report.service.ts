@@ -100,10 +100,14 @@ export class RunReportService extends BaseHospitalService {
     if (!report)
       throw new NotFoundException(`No matching report found or access denied`);
 
+    const initiatedBy = await this.userService.findOneWithProfile(
+      report.createdById,
+    );
+
     return {
       status: HttpStatus.FOUND,
       message: 'Run report found successfully.',
-      data: report,
+      data: { report, initiatedBy },
     };
   }
 

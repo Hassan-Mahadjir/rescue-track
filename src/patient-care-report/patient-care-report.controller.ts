@@ -76,10 +76,15 @@ export class PatientCareReportController {
   update(
     @Param('id') id: string,
     @Body() updatePatientCareReportDto: UpdatePatientCareReportDto,
+    @Req() req,
   ) {
+    const userId = Number(req.user.id);
+    if (isNaN(userId)) throw new BadRequestException('Invalid user id');
+
     return this.patientCareReportService.update(
       +id,
       updatePatientCareReportDto,
+      userId,
     );
   }
 
