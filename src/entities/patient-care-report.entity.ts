@@ -41,9 +41,6 @@ export class PatientCareReport {
   updatedAt: Date;
 
   @Column()
-  hospitalId: string;
-
-  @Column()
   createdById: number;
 
   @Column({ nullable: true })

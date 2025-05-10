@@ -69,9 +69,6 @@ export class RunReport {
   updatedAt: Date;
 
   @Column()
-  hospitalId: string;
-
-  @Column()
   createdById: number;
 
   @Column({ nullable: true })

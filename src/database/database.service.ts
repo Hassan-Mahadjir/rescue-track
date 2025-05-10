@@ -1,4 +1,9 @@
-import { Injectable, OnModuleDestroy, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  OnModuleInit,
+  OnModuleDestroy,
+  Logger,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DataSource } from 'typeorm';
@@ -6,7 +11,9 @@ import { Hospital } from 'src/entities/main/hospital.entity';
 import * as path from 'path';
 
 @Injectable()
-export class DatabaseConnectionService implements OnModuleDestroy {
+export class DatabaseConnectionService
+  implements OnModuleInit, OnModuleDestroy
+{
   private readonly connections: Map<string, DataSource> = new Map();
   private readonly logger = new Logger(DatabaseConnectionService.name);
 
@@ -14,6 +21,24 @@ export class DatabaseConnectionService implements OnModuleDestroy {
     @InjectRepository(Hospital, 'primary')
     private hospitalRepository: Repository<Hospital>,
   ) {}
+
+  async onModuleInit() {
+    this.logger.log('Initializing database connections for all hospitals');
+    const hospitals = await this.hospitalRepository.find();
+
+    for (const hospital of hospitals) {
+      try {
+        await this.initializeConnection(hospital.id);
+        this.logger.log(
+          `Successfully initialized connection for hospital: ${hospital.name}`,
+        );
+      } catch (error) {
+        this.logger.error(
+          `Failed to initialize connection for hospital ${hospital.name}: ${error.message}`,
+        );
+      }
+    }
+  }
 
   async getHospitalConnection(hospitalId: string): Promise<DataSource> {
     if (this.connections.has(hospitalId)) {
@@ -41,9 +66,10 @@ export class DatabaseConnectionService implements OnModuleDestroy {
       url: hospital.databaseUrl,
       entities: [path.resolve(__dirname, '../entities/*.entity{.ts,.js}')],
       synchronize: true,
-      logging: ['schema'], // Log schema changes
+      logging: ['schema'],
       migrations: [path.resolve(__dirname, '../migrations/*{.ts,.js}')],
-      migrationsRun: false, // Don't run migrations automatically
+      migrationsRun: false,
+      poolSize: 20,
     });
 
     try {
@@ -51,15 +77,6 @@ export class DatabaseConnectionService implements OnModuleDestroy {
       this.logger.log(
         `Successfully initialized connection for hospital: ${hospital.name}`,
       );
-
-      // Log the current schema state
-      const queryRunner = connection.createQueryRunner();
-      const tables = await queryRunner.getTables();
-      // this.logger.log(
-      //   `Current tables in ${hospital.name}: ${tables.map((t) => t.name).join(', ')}`,
-      // );
-      await queryRunner.release();
-
       this.connections.set(hospitalId, connection);
       return connection;
     } catch (error) {
@@ -70,34 +87,14 @@ export class DatabaseConnectionService implements OnModuleDestroy {
     }
   }
 
-  async reinitializeAllConnections(): Promise<void> {
-    this.logger.log('Starting reinitialization of all database connections');
-
-    // Close all existing connections
-    for (const [hospitalId, connection] of this.connections.entries()) {
-      if (connection.isInitialized) {
-        this.logger.log(`Closing connection for hospital ID: ${hospitalId}`);
-        await connection.destroy();
-      }
-    }
-    this.connections.clear();
-
-    // Get all hospitals and reinitialize their connections
-    const hospitals = await this.hospitalRepository.find();
-    this.logger.log(`Found ${hospitals.length} hospitals to reinitialize`);
-
-    for (const hospital of hospitals) {
-      try {
-        await this.initializeConnection(hospital.id);
-        this.logger.log(
-          `Successfully reinitialized connection for hospital: ${hospital.name}`,
-        );
-      } catch (error) {
-        this.logger.error(
-          `Failed to reinitialize connection for hospital ${hospital.name}: ${error.message}`,
-        );
-        // Continue with other hospitals even if one fails
-      }
+  async updateEntitySchema(hospitalId: string): Promise<void> {
+    const connection = await this.getHospitalConnection(hospitalId);
+    if (connection) {
+      this.logger.log(`Updating schema for hospital: ${hospitalId}`);
+      await connection.synchronize();
+      this.logger.log(
+        `Schema updated successfully for hospital: ${hospitalId}`,
+      );
     }
   }
 

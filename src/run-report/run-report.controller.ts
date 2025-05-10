@@ -64,8 +64,13 @@ export class RunReportController {
   update(
     @Param('id') id: string,
     @Body() updateRunReportDto: UpdateRunReportDto,
+    @Req() req,
   ) {
-    return this.runReportService.update(+id, updateRunReportDto);
+    const userId = req.user.id;
+    if (isNaN(userId)) {
+      throw new BadRequestException('Invalid user id');
+    }
+    return this.runReportService.update(+id, updateRunReportDto, userId);
   }
 
   @Delete('/manage/:id')

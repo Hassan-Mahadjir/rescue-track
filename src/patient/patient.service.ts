@@ -106,6 +106,52 @@ export class PatientService extends BaseHospitalService {
     };
   }
 
+  async getPatient(id: number, userId: number) {
+    const patientRepository = await this.getRepository(Patient);
+    const patient = await patientRepository.findOne({
+      where: { id: id, responsibleUserId: userId },
+      relations: ['updateHistory'],
+    });
+    if (!patient) {
+      return {
+        status: HttpStatus.NOT_FOUND,
+        message: 'Patient not found or you are not authorized to access it',
+        data: null,
+      };
+    }
+
+    const responsible = await this.userService.findOneWithProfile(
+      patient?.responsibleUserId,
+    );
+
+    return {
+      status: HttpStatus.FOUND,
+      message: 'Patient retrieved successfully',
+      data: { patient, responsible },
+    };
+  }
+
+  async getPatients(userId: number) {
+    const patientRepository = await this.getRepository(Patient);
+    const patients = await patientRepository.find({
+      where: { responsibleUserId: userId },
+      relations: ['updateHistory'],
+    });
+
+    if (!patients || patients.length === 0) {
+      return {
+        status: HttpStatus.NOT_FOUND,
+        message: 'No patients found or you are not authorized to access them',
+        data: null,
+      };
+    }
+    return {
+      status: HttpStatus.FOUND,
+      message: 'Patients retrieved successfully',
+      data: patients,
+    };
+  }
+
   async update(id: number, updatePatientDto: UpdatePatientDto, userId: number) {
     const patientRepository = await this.getRepository(Patient);
     const updateHistoryRepository = await this.getRepository(UpdateHistory);

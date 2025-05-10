@@ -90,10 +90,10 @@ export class AdministratorController {
   @UseGuards(RolesJwtAuthGuard)
   @Roles(Role.DEVELOPER)
   async reinitializeDatabases() {
-    await this.databaseConnectionService.reinitializeAllConnections();
-    return {
-      status: HttpStatus.OK,
-      message: 'All database connections reinitialized successfully',
-    };
+    // await this.databaseConnectionService.reinitializeAllConnections();
+    // return {
+    //   status: HttpStatus.OK,
+    //   message: 'All database connections reinitialized successfully',
+    // };
   }
 }
