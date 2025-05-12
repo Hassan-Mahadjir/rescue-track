@@ -10,6 +10,7 @@ import { Equipment } from './equipment.entity';
 import { Medication } from './medication.entity';
 import { SupplierSpecialist } from 'src/enums/supplier-Specialist.enums';
 import { UpdateHistory } from './updateHistory.entity';
+import { Order } from './order.entity';
 @Entity()
 export class Supplier {
   @PrimaryGeneratedColumn()
@@ -63,4 +64,9 @@ export class Supplier {
     onDelete: 'CASCADE',
   })
   updateHistory: UpdateHistory[];
+
+  @OneToMany(() => Order, (order) => order.supplier, {
+    onDelete: 'CASCADE',
+  })
+  orders: Order[];
 }

@@ -19,6 +19,7 @@ import { DatabaseModule } from './database/database.module';
 import { JwtModule } from '@nestjs/jwt';
 import { SupplierModule } from './supplier/supplier.module';
 import { OrderModule } from './order/order.module';
+import { ItemModule } from './item/item.module';
 import jwtConfig from './auth/config/jwt.config';
 
 @Module({
@@ -66,6 +67,7 @@ import jwtConfig from './auth/config/jwt.config';
     DatabaseModule,
     SupplierModule,
     OrderModule,
+    ItemModule,
   ],
 })
 export class AppModule implements NestModule {

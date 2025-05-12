@@ -4,9 +4,12 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Supplier } from './supplier.entity';
+import { OrderItem } from './order-item.entity';
+import { Unit } from 'src/enums/unit.enums';
 
 @Entity()
 export class Medication {
@@ -15,9 +18,6 @@ export class Medication {
 
   @Column()
   name: string;
-
-  @Column()
-  dosage: string;
 
   @Column({
     type: 'enum',
@@ -30,10 +30,10 @@ export class Medication {
   batchNumber: string;
 
   @Column()
-  quantity: number;
+  stockQuantity: number;
 
-  @Column()
-  unit: string;
+  @Column({ type: 'enum', enum: Unit, default: Unit.MG })
+  unit: Unit;
 
   @Column()
   expirationDate: Date;
@@ -50,4 +50,7 @@ export class Medication {
   @ManyToOne(() => Supplier, (supplier) => supplier.medications)
   @JoinColumn()
   supplier: Supplier;
+
+  @OneToMany(() => OrderItem, (orderItem) => orderItem.medication)
+  orderItems: OrderItem[];
 }

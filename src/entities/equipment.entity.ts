@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 import { Supplier } from './supplier.entity';
 import { MaintenanceRecord } from './maintenance-record.entity';
+import { OrderItem } from './order-item.entity';
 
 @Entity()
 export class Equipment {
@@ -32,13 +33,16 @@ export class Equipment {
   @Column()
   manufacturer: string;
 
-  @Column()
+  @Column({ type: 'date' })
   purchaseDate: Date;
 
   @Column()
   warrantyPeriod: number;
 
-  @Column()
+  @Column({ nullable: true })
+  stockQuantity: number;
+
+  @Column({ nullable: true })
   nextMaintenanceDate: Date;
 
   @Column({
@@ -66,6 +70,12 @@ export class Equipment {
   @OneToMany(
     () => MaintenanceRecord,
     (maintenanceRecord) => maintenanceRecord.equipment,
+    { cascade: true, nullable: true },
   )
   maintenanceRecords: MaintenanceRecord[];
+
+  @OneToMany(() => OrderItem, (orderItem) => orderItem.equipment, {
+    cascade: true,
+  })
+  orderItems: OrderItem[];
 }
