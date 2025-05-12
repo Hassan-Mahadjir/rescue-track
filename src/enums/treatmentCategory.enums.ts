@@ -11,4 +11,5 @@ export enum TreatmentCategory {
   ANTICOAGULANT = 'anticoagulant',
   IMMUNOSUPPRESSANT = 'immunosuppressant',
   HORMONE = 'hormone',
+  OTHER = 'other',
 }

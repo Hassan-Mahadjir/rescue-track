@@ -17,6 +17,8 @@ import { AdministratorModule } from './administrator/administrator.module';
 import { HospitalContextMiddleware } from './config/hospital-context.middleware';
 import { DatabaseModule } from './database/database.module';
 import { JwtModule } from '@nestjs/jwt';
+import { SupplierModule } from './supplier/supplier.module';
+import { OrderModule } from './order/order.module';
 import jwtConfig from './auth/config/jwt.config';
 
 @Module({
@@ -62,6 +64,8 @@ import jwtConfig from './auth/config/jwt.config';
     RunReportModule,
     AdministratorModule,
     DatabaseModule,
+    SupplierModule,
+    OrderModule,
   ],
 })
 export class AppModule implements NestModule {

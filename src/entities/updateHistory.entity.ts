@@ -9,6 +9,7 @@ import {
 import { Patient } from './patient.entity';
 import { PatientCareReport } from './patient-care-report.entity';
 import { RunReport } from './run-report.entity';
+import { Supplier } from './supplier.entity';
 
 @Entity()
 export class UpdateHistory {
@@ -45,4 +46,11 @@ export class UpdateHistory {
   })
   @JoinColumn()
   runReport: RunReport;
+
+  // Relationship with Supplier
+  @ManyToOne(() => Supplier, (supplier) => supplier.updateHistory, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn()
+  supplier: Supplier;
 }
