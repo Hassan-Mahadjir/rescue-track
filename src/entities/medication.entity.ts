@@ -1,6 +1,7 @@
 import { TreatmentCategory } from 'src/enums/treatmentCategory.enums';
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -38,7 +39,7 @@ export class Medication {
   @Column()
   expirationDate: Date;
 
-  @Column()
+  @CreateDateColumn()
   createdAt: Date;
 
   @Column()

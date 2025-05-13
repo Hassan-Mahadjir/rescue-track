@@ -15,7 +15,7 @@ import {
   CreateItemDto,
   CreateMedicationDto,
 } from './dto/create-item.dto';
-import { UpdateItemDto } from './dto/update-item.dto';
+import { UpdateMedicationDto, UpdateEquipmentDto } from './dto/update-item.dto';
 
 @Controller('item')
 export class ItemController {
@@ -53,7 +53,10 @@ export class ItemController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateItemDto: UpdateItemDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateItemDto: UpdateMedicationDto | UpdateEquipmentDto,
+  ) {
     return this.itemService.update(+id, updateItemDto);
   }
 

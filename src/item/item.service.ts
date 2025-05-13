@@ -4,12 +4,14 @@ import {
   CreateItemDto,
   CreateMedicationDto,
 } from './dto/create-item.dto';
-import { UpdateItemDto } from './dto/update-item.dto';
+import { UpdateMedicationDto, UpdateEquipmentDto } from './dto/update-item.dto';
 import { BaseHospitalService } from 'src/database/base-hospital.service';
 import { Request } from 'express';
 import { DatabaseConnectionService } from 'src/database/database.service';
 import { Medication } from 'src/entities/medication.entity';
 import { Equipment } from 'src/entities/equipment.entity';
+import { TreatmentCategory } from 'src/enums/treatmentCategory.enums';
+import { EquipmentType } from 'src/enums/equipmentType.enums';
 
 @Injectable()
 export class ItemService extends BaseHospitalService {
@@ -29,7 +31,11 @@ export class ItemService extends BaseHospitalService {
     const equipmentRepository = await this.getRepository(Equipment);
 
     if (itemType === 'medication') {
-      const medication = medicationRepository.create(createItemDto);
+      const medication = medicationRepository.create({
+        ...createItemDto,
+        createdById: userId,
+        category: createItemDto.category as TreatmentCategory,
+      });
       await medicationRepository.save(medication);
       return {
         status: HttpStatus.CREATED,
@@ -37,7 +43,11 @@ export class ItemService extends BaseHospitalService {
         data: medication,
       };
     } else if (itemType === 'equipment') {
-      const equipment = equipmentRepository.create(createItemDto);
+      const equipment = equipmentRepository.create({
+        ...createItemDto,
+        createdById: userId,
+        category: createItemDto.category as EquipmentType,
+      });
       await equipmentRepository.save(equipment);
       return {
         status: HttpStatus.CREATED,
@@ -92,9 +102,7 @@ export class ItemService extends BaseHospitalService {
     }
   }
 
-  update(id: number, updateItemDto: UpdateItemDto) {
-    return `This action updates a #${id} item`;
-  }
+  update(id: number, updateItemDto: UpdateMedicationDto | UpdateEquipmentDto) {}
 
   remove(id: number) {
     return `This action removes a #${id} item`;

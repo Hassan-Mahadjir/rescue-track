@@ -4,4 +4,7 @@ export enum Status {
   PENDING = 'pending',
   SUSPENDED = 'suspended',
   DELETED = 'deleted',
+  DELIVERED = 'delivered',
+  CANCELLED = 'cancelled',
+  COMPLETED = 'completed',
 }

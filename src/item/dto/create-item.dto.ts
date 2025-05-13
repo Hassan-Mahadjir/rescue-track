@@ -38,15 +38,17 @@ export class CreateMedicationDto extends CreateItemDto {
   expirationDate: Date;
 
   @IsNumber()
+  @IsOptional()
   reorderPoint: number;
 
+  @IsOptional()
   @IsNumber()
   supplierId: number;
 }
 
 export class CreateEquipmentDto extends CreateItemDto {
   @IsEnum(EquipmentType)
-  type: EquipmentType;
+  category: EquipmentType;
 
   @IsString()
   serialNumber: string;

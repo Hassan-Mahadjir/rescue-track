@@ -22,7 +22,7 @@ export class Equipment {
   name: string;
 
   @Column({ type: 'enum', enum: EquipmentType, default: EquipmentType.OTHER })
-  type: EquipmentType;
+  category: EquipmentType;
 
   @Column()
   serialNumber: string;
@@ -33,7 +33,7 @@ export class Equipment {
   @Column()
   manufacturer: string;
 
-  @Column({ type: 'date' })
+  @Column({ type: 'date', nullable: true })
   purchaseDate: Date;
 
   @Column()
@@ -52,7 +52,7 @@ export class Equipment {
   })
   status: EquipmentStatus;
 
-  @Column()
+  @Column({ nullable: true })
   notes: string;
 
   @CreateDateColumn()

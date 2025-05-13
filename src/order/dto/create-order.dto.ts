@@ -1,12 +1,14 @@
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  IsEnum,
   IsNumber,
   IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
 import { CreateOrderItemDto } from './create-order-item.dto';
+import { Status } from 'src/enums/status.enums';
 
 export class CreateOrderDto {
   @IsNumber()
@@ -15,6 +17,10 @@ export class CreateOrderDto {
   @IsString()
   @IsOptional()
   notes?: string;
+
+  @IsEnum(Status)
+  @IsOptional()
+  status: Status;
 
   @IsArray()
   @ValidateNested({ each: true })

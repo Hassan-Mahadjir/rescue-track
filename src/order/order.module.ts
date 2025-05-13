@@ -12,12 +12,13 @@ import { Order } from 'src/entities/order.entity';
 import { UserService } from 'src/user/user.service';
 import { DatabaseConnectionService } from 'src/database/database.service';
 import { OrderItem } from 'src/entities/order-item.entity';
+import { UpdateHistory } from 'src/entities/updateHistory.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, Profile, Hospital], 'primary'),
     TypeOrmModule.forFeature(
-      [Supplier, Medication, Equipment, Order, OrderItem],
+      [Supplier, Medication, Equipment, Order, OrderItem, UpdateHistory],
       'secondary',
     ),
   ],

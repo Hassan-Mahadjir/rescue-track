@@ -14,6 +14,8 @@ import { OrderItem } from 'src/entities/order-item.entity';
 import { Supplier } from 'src/entities/supplier.entity';
 import { Medication } from 'src/entities/medication.entity';
 import { Equipment } from 'src/entities/equipment.entity';
+import { Status } from 'src/enums/status.enums';
+import { UpdateHistory } from 'src/entities/updateHistory.entity';
 
 @Injectable()
 export class OrderService extends BaseHospitalService {
@@ -151,8 +153,12 @@ export class OrderService extends BaseHospitalService {
     };
   }
 
-  async update(id: number, updateOrderDto: UpdateOrderDto) {
+  async update(id: number, updateOrderDto: UpdateOrderDto, userId: number) {
     const orderRepository = await this.getRepository(Order);
+    const medicationRepository = await this.getRepository(Medication);
+    const equipmentRepository = await this.getRepository(Equipment);
+    const updateHistoryRepository = await this.getRepository(UpdateHistory);
+
     const order = await orderRepository.findOne({
       where: { id },
       relations: ['orderItems'],
@@ -161,13 +167,36 @@ export class OrderService extends BaseHospitalService {
       throw new NotFoundException('Order not found');
     }
 
-    Object.assign(order, updateOrderDto);
+    if (updateOrderDto.status === Status.DELIVERED) {
+      for (const item of order.orderItems) {
+        if (item.medication) {
+          const medication = await medicationRepository.findOne({
+            where: { id: item.medication.id },
+          });
+          if (medication) {
+            medication.stockQuantity += item.quantity;
+            await medicationRepository.save(medication);
+          }
+        }
+      }
+    }
+    Object.assign(order, { ...updateOrderDto, updatedById: userId });
     await orderRepository.save(order);
+
+    const updateHistory = await updateHistoryRepository.create({
+      order,
+      updatedById: userId,
+      updateFields: updateOrderDto,
+    });
+    await updateHistoryRepository.save(updateHistory);
 
     return {
       status: HttpStatus.OK,
       message: 'Order updated successfully',
-      data: order,
+      data: {
+        updateFields: updateHistory.updateFields,
+        updatedBy: updateHistory.updatedById,
+      },
     };
   }
 

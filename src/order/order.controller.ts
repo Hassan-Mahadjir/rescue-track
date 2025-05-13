@@ -36,8 +36,15 @@ export class OrderController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
-    return this.orderService.update(+id, updateOrderDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateOrderDto: UpdateOrderDto,
+    @Req() req,
+  ) {
+    const userId = Number(req.user.id);
+    if (isNaN(userId)) throw new BadRequestException('Invalid user id');
+
+    return this.orderService.update(+id, updateOrderDto, userId);
   }
 
   @Delete(':id')
