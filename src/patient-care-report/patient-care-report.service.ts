@@ -10,7 +10,7 @@ import { PatientCareReport } from 'src/entities/patient-care-report.entity';
 import { Treatment } from 'src/entities/treatment.entity';
 import { UserService } from 'src/user/user.service';
 import { Patient } from 'src/entities/patient.entity';
-import { LessThan, MoreThan } from 'typeorm';
+import { In, LessThan, MoreThan } from 'typeorm';
 import { UpdateHistory } from 'src/entities/updateHistory.entity';
 import { RunReport } from 'src/entities/run-report.entity';
 import { UpdateTreatmentDto } from './dto/update-treatement.dto';
@@ -81,19 +81,76 @@ export class PatientCareReportService extends BaseHospitalService {
       );
     }
 
+    // check if treatments exist
+    const existingTreatments = await treatmentRepository.find({
+      where: {
+        name: In(createPatientCareReportDto.treatments.map((t) => t.name)),
+      },
+    });
+
+    // Check if all treatments exist
+    const missingTreatments = createPatientCareReportDto.treatments
+      .filter(
+        (treatment) =>
+          !existingTreatments.some((et) => et.name === treatment.name),
+      )
+      .map((t) => t.name);
+
+    if (missingTreatments.length > 0) {
+      throw new BadRequestException(
+        `The following treatments do not exist in the database: ${missingTreatments.join(', ')}`,
+      );
+    }
+
+    // Check if medical conditions exist
+    const existingMedicalConditions = await medicalConditionRepository.find({
+      where: {
+        name: In(
+          createPatientCareReportDto.medicalConditions.map((m) => m.name),
+        ),
+      },
+    });
+
+    const missingMedicalConditions =
+      createPatientCareReportDto.medicalConditions
+        .filter(
+          (condition) =>
+            !existingMedicalConditions.some((em) => em.name === condition.name),
+        )
+        .map((m) => m.name);
+
+    if (missingMedicalConditions.length > 0) {
+      throw new BadRequestException(
+        `The following medical conditions do not exist in the database: ${missingMedicalConditions.join(', ')}`,
+      );
+    }
+
+    // Check if allergies exist
+    const existingAllergies = await allergyRepository.find({
+      where: {
+        name: In(createPatientCareReportDto.allergies.map((a) => a.name)),
+      },
+    });
+
+    const missingAllergies = createPatientCareReportDto.allergies
+      .filter(
+        (allergy) => !existingAllergies.some((ea) => ea.name === allergy.name),
+      )
+      .map((a) => a.name);
+
+    if (missingAllergies.length > 0) {
+      throw new BadRequestException(
+        `The following allergies do not exist in the database: ${missingAllergies.join(', ')}`,
+      );
+    }
+
     const newPCR = PCRRepository.create({
       ...createPatientCareReportDto,
       patient,
       createdById: initiatedPersonId,
-      treatments: createPatientCareReportDto.treatments.map((t) =>
-        treatmentRepository.create(t),
-      ),
-      medicalConditions: createPatientCareReportDto.medicalConditions.map((m) =>
-        medicalConditionRepository.create(m),
-      ),
-      allergies: createPatientCareReportDto.allergies.map((a) =>
-        allergyRepository.create(a),
-      ),
+      treatments: existingTreatments,
+      medicalConditions: existingMedicalConditions,
+      allergies: existingAllergies,
       runReport,
     });
 
@@ -518,6 +575,64 @@ export class PatientCareReportService extends BaseHospitalService {
     return {
       status: HttpStatus.OK,
       message: 'Medical condition removed successfully',
+    };
+  }
+
+  async createTreatments(createTreatmentDto: TreatmentDto[]) {
+    const treatmentRepository = await this.getRepository(Treatment);
+    for (let index = 0; index < createTreatmentDto.length; index++) {
+      let treatment = createTreatmentDto[index];
+      const existingTreatment = await treatmentRepository.findOne({
+        where: { name: treatment.name },
+      });
+      if (!existingTreatment) {
+        let newTreatment = treatmentRepository.create(treatment);
+        await treatmentRepository.save(newTreatment);
+      }
+    }
+    return {
+      status: HttpStatus.CREATED,
+      message: 'Treatments created successfully',
+    };
+  }
+
+  async createMedicalConditions(
+    createMedicalConditionDto: CreateMedicalConditionDto[],
+  ) {
+    const medicalConditionRepository =
+      await this.getRepository(MedicalCondition);
+    for (let index = 0; index < createMedicalConditionDto.length; index++) {
+      let medicalCondition = createMedicalConditionDto[index];
+      const existingMedicalCondition = await medicalConditionRepository.findOne(
+        { where: { name: medicalCondition.name } },
+      );
+      if (!existingMedicalCondition) {
+        let newMedicalCondition =
+          medicalConditionRepository.create(medicalCondition);
+        await medicalConditionRepository.save(newMedicalCondition);
+      }
+    }
+    return {
+      status: HttpStatus.CREATED,
+      message: 'Medical conditions created successfully',
+    };
+  }
+
+  async createAllergies(createAllergyDto: CreateAllergyDto[]) {
+    const allergyRepository = await this.getRepository(Allergy);
+    for (let index = 0; index < createAllergyDto.length; index++) {
+      let allergy = createAllergyDto[index];
+      const existingAllergy = await allergyRepository.findOne({
+        where: { name: allergy.name },
+      });
+      if (!existingAllergy) {
+        let newAllergy = allergyRepository.create(allergy);
+        await allergyRepository.save(newAllergy);
+      }
+    }
+    return {
+      status: HttpStatus.CREATED,
+      message: 'Allergies created successfully',
     };
   }
 }

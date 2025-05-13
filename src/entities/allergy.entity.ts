@@ -1,4 +1,10 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { PatientCareReport } from './patient-care-report.entity';
 
 @Entity()
@@ -10,6 +16,7 @@ export class Allergy {
   name: string;
 
   // Relationship with PatientCareReport
-  @ManyToOne(() => PatientCareReport, (PCR) => PCR.allergies)
-  PCR: PatientCareReport;
+  @ManyToMany(() => PatientCareReport, (PCR) => PCR.allergies)
+  @JoinTable()
+  PCR: PatientCareReport[];
 }

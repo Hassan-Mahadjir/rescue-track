@@ -2,6 +2,7 @@ import {
   Column,
   Entity,
   JoinColumn,
+  JoinTable,
   ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -28,7 +29,7 @@ export class Treatment {
   category: TreatmentCategory;
 
   // Relationship with PCR
-  @ManyToOne(() => PatientCareReport, (PCR) => PCR.treatments)
-  @JoinColumn()
-  PCR: PatientCareReport;
+  @ManyToMany(() => PatientCareReport, (PCR) => PCR.treatments)
+  @JoinTable()
+  PCR: PatientCareReport[];
 }

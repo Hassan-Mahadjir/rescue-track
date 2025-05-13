@@ -104,6 +104,24 @@ export class PatientCareReportController {
       createTreatmentDto,
     );
   }
+  @Post('/treatments')
+  createTreatments(@Body() createTreatmentDto: TreatmentDto) {
+    return this.patientCareReportService.createTreatments(createTreatmentDto);
+  }
+
+  @Post('/medical-conditions')
+  createMedicalConditions(
+    @Body() createMedicalConditionDto: CreateMedicalConditionDto[],
+  ) {
+    return this.patientCareReportService.createMedicalConditions(
+      createMedicalConditionDto,
+    );
+  }
+
+  @Post('/allergies')
+  createAllergies(@Body() createAllergyDto: CreateAllergyDto[]) {
+    return this.patientCareReportService.createAllergies(createAllergyDto);
+  }
 
   @Patch('/treatment/:id')
   @Roles(UserRole.ADMIN)

@@ -3,6 +3,8 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   OneToOne,
@@ -56,7 +58,8 @@ export class PatientCareReport {
   updateHistory: UpdateHistory[];
 
   //Relationship with Treatment
-  @OneToMany(() => Treatment, (treatment) => treatment.PCR, { cascade: true })
+  @ManyToMany(() => Treatment, (treatment) => treatment.PCR)
+  @JoinTable()
   treatments: Treatment[];
 
   // Relationship with Run-Report
@@ -66,14 +69,15 @@ export class PatientCareReport {
   runReport: RunReport;
 
   // Relationship with MedicalCondition
-  @OneToMany(
+  @ManyToMany(
     () => MedicalCondition,
     (medicalCondition) => medicalCondition.PCR,
-    { cascade: true },
   )
+  @JoinTable()
   medicalConditions: MedicalCondition[];
 
   // Relationship with Allergy
-  @OneToMany(() => Allergy, (allergy) => allergy.PCR, { cascade: true })
+  @ManyToMany(() => Allergy, (allergy) => allergy.PCR)
+  @JoinTable()
   allergies: Allergy[];
 }
