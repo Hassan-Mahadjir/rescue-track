@@ -16,12 +16,18 @@ import { Medication } from 'src/entities/medication.entity';
 import { Equipment } from 'src/entities/equipment.entity';
 import { Status } from 'src/enums/status.enums';
 import { UpdateHistory } from 'src/entities/updateHistory.entity';
+import { OrderStatus } from 'src/enums/orderStatus.enums';
+import { MailService } from 'src/mail/mail.service';
+import { UserService } from 'src/user/user.service';
+import { User } from 'src/entities/main/user.entity';
 
 @Injectable()
 export class OrderService extends BaseHospitalService {
   constructor(
     protected readonly request: Request,
     protected readonly databaseConnectionService: DatabaseConnectionService,
+    private readonly mailService: MailService,
+    private readonly userService: UserService,
   ) {
     super(request, databaseConnectionService);
   }
@@ -108,6 +114,19 @@ export class OrderService extends BaseHospitalService {
       ],
     });
 
+    if (completeOrder?.supplier?.email) {
+      const user = await this.userService.findOneWithProfile(
+        completeOrder.createdById,
+      );
+
+      await this.mailService.sendOrderEmailToSupplier(
+        completeOrder.supplier.email,
+        completeOrder,
+        user,
+      );
+      await this.mailService.sendOrderEmailToAdmin(user.email, completeOrder);
+    }
+
     return {
       status: HttpStatus.CREATED,
       message: 'Order created successfully',
@@ -161,25 +180,39 @@ export class OrderService extends BaseHospitalService {
 
     const order = await orderRepository.findOne({
       where: { id },
-      relations: ['orderItems'],
+      relations: [
+        'orderItems',
+        'orderItems.medication',
+        'orderItems.equipment',
+      ],
     });
     if (!order) {
       throw new NotFoundException('Order not found');
     }
 
-    if (updateOrderDto.status === Status.DELIVERED) {
+    if (order.status === OrderStatus.RECEIVED) {
+      throw new BadRequestException('Order is already received');
+    }
+
+    if (updateOrderDto.orderStatus === OrderStatus.RECEIVED) {
       for (const item of order.orderItems) {
         if (item.medication) {
           const medication = await medicationRepository.findOne({
             where: { id: item.medication.id },
           });
-          if (medication) {
-            medication.stockQuantity += item.quantity;
-            await medicationRepository.save(medication);
+          if (!medication) {
+            throw new NotFoundException(
+              `Medication with id ${item.medication.id} not found`,
+            );
           }
+          const newStockQuantity = medication.stockQuantity + item.quantity;
+          await medicationRepository.update(medication.id, {
+            stockQuantity: newStockQuantity,
+          });
         }
       }
     }
+
     Object.assign(order, { ...updateOrderDto, updatedById: userId });
     await orderRepository.save(order);
 

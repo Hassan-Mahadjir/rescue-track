@@ -4,7 +4,7 @@ import { Request } from 'express';
 import { DataSource, Repository, EntityTarget, ObjectLiteral } from 'typeorm';
 import { DatabaseConnectionService } from './database.service';
 
-@Injectable({ scope: Scope.REQUEST })
+@Injectable({ scope: Scope.DEFAULT })
 export abstract class BaseHospitalService {
   protected connection: DataSource;
 

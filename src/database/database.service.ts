@@ -3,6 +3,7 @@ import {
   OnModuleInit,
   OnModuleDestroy,
   Logger,
+  Scope,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -10,23 +11,56 @@ import { DataSource } from 'typeorm';
 import { Hospital } from 'src/entities/main/hospital.entity';
 import * as path from 'path';
 
-@Injectable()
+@Injectable({ scope: Scope.DEFAULT })
 export class DatabaseConnectionService
   implements OnModuleInit, OnModuleDestroy
 {
   private readonly connections: Map<string, DataSource> = new Map();
   private readonly logger = new Logger(DatabaseConnectionService.name);
+  private isInitializing = false;
+  private initializationPromise: Promise<void> | null = null;
+  private static instance: DatabaseConnectionService;
 
   constructor(
     @InjectRepository(Hospital, 'primary')
     private hospitalRepository: Repository<Hospital>,
-  ) {}
+  ) {
+    if (DatabaseConnectionService.instance) {
+      return DatabaseConnectionService.instance;
+    }
+    DatabaseConnectionService.instance = this;
+  }
 
   async onModuleInit() {
+    if (this.isInitializing) {
+      await this.initializationPromise;
+      return;
+    }
+
+    if (this.connections.size > 0) {
+      return;
+    }
+
+    this.isInitializing = true;
+    this.initializationPromise = this.initializeAllConnections();
+
+    try {
+      await this.initializationPromise;
+    } finally {
+      this.isInitializing = false;
+      this.initializationPromise = null;
+    }
+  }
+
+  private async initializeAllConnections() {
     this.logger.log('Initializing database connections for all hospitals');
     const hospitals = await this.hospitalRepository.find();
 
     for (const hospital of hospitals) {
+      if (this.connections.has(hospital.id)) {
+        continue;
+      }
+
       try {
         await this.initializeConnection(hospital.id);
         this.logger.log(
@@ -46,8 +80,21 @@ export class DatabaseConnectionService
       if (connection && connection.isInitialized) {
         return connection;
       }
+
+      if (connection && !connection.isInitialized) {
+        try {
+          await connection.initialize();
+          return connection;
+        } catch (error) {
+          this.logger.error(
+            `Failed to reinitialize connection for hospital ${hospitalId}: ${error.message}`,
+          );
+          this.connections.delete(hospitalId);
+        }
+      }
     }
 
+    this.logger.debug(`Creating new connection for hospital ${hospitalId}`);
     return await this.initializeConnection(hospitalId);
   }
 

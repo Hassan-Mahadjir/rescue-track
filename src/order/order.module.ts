@@ -13,6 +13,7 @@ import { UserService } from 'src/user/user.service';
 import { DatabaseConnectionService } from 'src/database/database.service';
 import { OrderItem } from 'src/entities/order-item.entity';
 import { UpdateHistory } from 'src/entities/updateHistory.entity';
+import { MailModule } from 'src/mail/mail.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { UpdateHistory } from 'src/entities/updateHistory.entity';
       [Supplier, Medication, Equipment, Order, OrderItem, UpdateHistory],
       'secondary',
     ),
+    MailModule,
   ],
   controllers: [OrderController],
   providers: [OrderService, UserService, DatabaseConnectionService],

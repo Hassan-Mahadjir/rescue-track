@@ -1,12 +1,14 @@
 import { Module } from '@nestjs/common';
-import { DatabaseController } from './database.controller';
-import { DatabaseConnectionService } from './database.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Hospital } from 'src/entities/main/hospital.entity';
+import { DatabaseConnectionService } from './database.service';
+import { Hospital } from '../entities/main/hospital.entity';
+import { ConnectionMonitorService } from './connection-monitor.service';
+import { ConnectionMonitorController } from './connection-monitor.controller';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Hospital], 'primary')],
-  controllers: [DatabaseController],
-  providers: [DatabaseConnectionService],
+  providers: [DatabaseConnectionService, ConnectionMonitorService],
+  exports: [DatabaseConnectionService],
+  controllers: [ConnectionMonitorController],
 })
 export class DatabaseModule {}

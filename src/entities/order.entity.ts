@@ -32,13 +32,19 @@ export class Order {
   @Column({ nullable: true })
   updatedById: number;
 
-  @ManyToOne(() => Supplier, (supplier) => supplier.orders)
+  @ManyToOne(() => Supplier, (supplier) => supplier.orders, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn()
   supplier: Supplier;
 
-  @OneToMany(() => OrderItem, (orderItem) => orderItem.order)
+  @OneToMany(() => OrderItem, (orderItem) => orderItem.order, {
+    onDelete: 'CASCADE',
+  })
   orderItems: OrderItem[];
 
-  @OneToMany(() => UpdateHistory, (updateHistory) => updateHistory.order)
+  @OneToMany(() => UpdateHistory, (updateHistory) => updateHistory.order, {
+    onDelete: 'CASCADE',
+  })
   updateHistory: UpdateHistory[];
 }

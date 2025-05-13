@@ -8,7 +8,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { CreateOrderItemDto } from './create-order-item.dto';
-import { Status } from 'src/enums/status.enums';
+import { OrderStatus } from 'src/enums/orderStatus.enums';
 
 export class CreateOrderDto {
   @IsNumber()
@@ -18,9 +18,9 @@ export class CreateOrderDto {
   @IsOptional()
   notes?: string;
 
-  @IsEnum(Status)
+  @IsEnum(OrderStatus)
   @IsOptional()
-  status: Status;
+  orderStatus: OrderStatus;
 
   @IsArray()
   @ValidateNested({ each: true })

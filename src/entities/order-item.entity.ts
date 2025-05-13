@@ -17,18 +17,20 @@ export class OrderItem {
   @Column()
   quantity: number;
 
-  @ManyToOne(() => Order, (order) => order.orderItems)
+  @ManyToOne(() => Order, (order) => order.orderItems, { onDelete: 'CASCADE' })
   @JoinColumn()
   order: Order;
 
   @ManyToOne(() => Medication, (medication) => medication.orderItems, {
     nullable: true,
+    onDelete: 'CASCADE',
   })
   @JoinColumn()
   medication: Medication;
 
   @ManyToOne(() => Equipment, (equipment) => equipment.orderItems, {
     nullable: true,
+    onDelete: 'CASCADE',
   })
   @JoinColumn()
   equipment: Equipment;

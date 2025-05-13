@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import {
   CreateEquipmentDto,
   CreateItemDto,
@@ -84,6 +84,9 @@ export class ItemService extends BaseHospitalService {
         where: { id },
         relations: ['supplier'],
       });
+      if (!medication) {
+        throw new NotFoundException('Medication not found');
+      }
       return {
         status: HttpStatus.FOUND,
         message: 'Medication fetched successfully',
@@ -94,6 +97,9 @@ export class ItemService extends BaseHospitalService {
         where: { id },
         relations: ['supplier'],
       });
+      if (!equipment) {
+        throw new NotFoundException('Equipment not found');
+      }
       return {
         status: HttpStatus.FOUND,
         message: 'Equipment fetched successfully',
