@@ -269,27 +269,84 @@ export class PatientCareReportService extends BaseHospitalService {
       );
     }
 
-    // Optional: Update treatments if provided
+    // Update treatments if provided
     if (updatePatientCareReportDto.treatments) {
-      report.treatments = updatePatientCareReportDto.treatments.map((t) =>
-        treatmentRepository.create(t),
-      );
-    }
+      const existingTreatments = await treatmentRepository.find({
+        where: {
+          name: In(updatePatientCareReportDto.treatments.map((t) => t.name)),
+        },
+      });
 
-    if (updatePatientCareReportDto.allergies) {
-      report.allergies = updatePatientCareReportDto.allergies.map((a) =>
-        allergyRepository.create(a),
-      );
-    }
+      const missingTreatments = updatePatientCareReportDto.treatments
+        .filter(
+          (treatment) =>
+            !existingTreatments.some((et) => et.name === treatment.name),
+        )
+        .map((t) => t.name);
 
-    if (updatePatientCareReportDto.medicalConditions) {
-      report.medicalConditions =
-        updatePatientCareReportDto.medicalConditions.map((m) =>
-          medicalConditionRepository.create(m),
+      if (missingTreatments.length > 0) {
+        throw new BadRequestException(
+          `The following treatments do not exist in the database: ${missingTreatments.join(', ')}`,
         );
+      }
+
+      report.treatments = existingTreatments;
     }
 
-    // Optional: Update patient if patientId is provided
+    // Update allergies if provided
+    if (updatePatientCareReportDto.allergies) {
+      const existingAllergies = await allergyRepository.find({
+        where: {
+          name: In(updatePatientCareReportDto.allergies.map((a) => a.name)),
+        },
+      });
+
+      const missingAllergies = updatePatientCareReportDto.allergies
+        .filter(
+          (allergy) =>
+            !existingAllergies.some((ea) => ea.name === allergy.name),
+        )
+        .map((a) => a.name);
+
+      if (missingAllergies.length > 0) {
+        throw new BadRequestException(
+          `The following allergies do not exist in the database: ${missingAllergies.join(', ')}`,
+        );
+      }
+
+      report.allergies = existingAllergies;
+    }
+
+    // Update medical conditions if provided
+    if (updatePatientCareReportDto.medicalConditions) {
+      const existingMedicalConditions = await medicalConditionRepository.find({
+        where: {
+          name: In(
+            updatePatientCareReportDto.medicalConditions.map((m) => m.name),
+          ),
+        },
+      });
+
+      const missingMedicalConditions =
+        updatePatientCareReportDto.medicalConditions
+          .filter(
+            (condition) =>
+              !existingMedicalConditions.some(
+                (em) => em.name === condition.name,
+              ),
+          )
+          .map((m) => m.name);
+
+      if (missingMedicalConditions.length > 0) {
+        throw new BadRequestException(
+          `The following medical conditions do not exist in the database: ${missingMedicalConditions.join(', ')}`,
+        );
+      }
+
+      report.medicalConditions = existingMedicalConditions;
+    }
+
+    // Update patient if patientId is provided
     if (updatePatientCareReportDto.patientId) {
       const patient = await patientRepository.findOne({
         where: { id: updatePatientCareReportDto.patientId },
@@ -303,6 +360,7 @@ export class PatientCareReportService extends BaseHospitalService {
 
       report.patient = patient;
     }
+
     await PCRRepository.save({
       ...report,
       updatedById: updatedById,
@@ -330,10 +388,6 @@ export class PatientCareReportService extends BaseHospitalService {
     const PCRRepository = await this.getRepository(PatientCareReport);
     const runReportRepository = await this.getRepository(RunReport);
     const updateHistoryRepository = await this.getRepository(UpdateHistory);
-    const treatmentRepository = await this.getRepository(Treatment);
-    const allergyRepository = await this.getRepository(Allergy);
-    const medicalConditionRepository =
-      await this.getRepository(MedicalCondition);
 
     const report = await PCRRepository.findOne({
       where: { id },
@@ -365,18 +419,23 @@ export class PatientCareReportService extends BaseHospitalService {
       await updateHistoryRepository.remove(report.updateHistory);
     }
 
+    // Clear the many-to-many relationships
     if (report.treatments.length > 0) {
-      await treatmentRepository.remove(report.treatments);
+      report.treatments = [];
     }
 
     if (report.allergies.length > 0) {
-      await allergyRepository.remove(report.allergies);
+      report.allergies = [];
     }
 
     if (report.medicalConditions.length > 0) {
-      await medicalConditionRepository.remove(report.medicalConditions);
+      report.medicalConditions = [];
     }
 
+    // Save the report with cleared relationships
+    await PCRRepository.save(report);
+
+    // Finally remove the report
     await PCRRepository.remove(report);
 
     return {
@@ -400,16 +459,23 @@ export class PatientCareReportService extends BaseHospitalService {
     if (!report)
       throw new NotFoundException(`Report with id ${reportId} not found`);
 
-    const newTreatment = treatmentRepository.create(createTreatmentDto);
+    const existingTreatment = await treatmentRepository.findOne({
+      where: { name: createTreatmentDto.name },
+    });
 
-    report.treatments.push(newTreatment);
+    if (!existingTreatment) {
+      throw new BadRequestException(
+        `Treatment with name ${createTreatmentDto.name} does not exist in the database`,
+      );
+    }
 
+    report.treatments.push(existingTreatment);
     await PCRRepository.save(report);
 
     return {
       status: HttpStatus.CREATED,
       message: 'Treatment added to report successfully',
-      data: newTreatment,
+      data: existingTreatment,
     };
   }
 
@@ -440,7 +506,18 @@ export class PatientCareReportService extends BaseHospitalService {
 
   async removeTreatmentFromReport(treatmentId: number) {
     const treatmentRepository = await this.getRepository(Treatment);
-    await treatmentRepository.delete(treatmentId);
+    const treatment = await treatmentRepository.findOne({
+      where: { id: treatmentId },
+      relations: ['PCR'],
+    });
+
+    if (!treatment) {
+      throw new NotFoundException(`Treatment with id ${treatmentId} not found`);
+    }
+
+    // Remove the treatment from all associated PCRs
+    treatment.PCR = [];
+    await treatmentRepository.save(treatment);
 
     return {
       status: HttpStatus.OK,
@@ -464,14 +541,23 @@ export class PatientCareReportService extends BaseHospitalService {
       throw new NotFoundException(`Report with id ${reportId} not found`);
     }
 
-    const newAllergy = allergyRepository.create(createAllergyDto);
-    report.allergies.push(newAllergy);
+    const existingAllergy = await allergyRepository.findOne({
+      where: { name: createAllergyDto.name },
+    });
+
+    if (!existingAllergy) {
+      throw new BadRequestException(
+        `Allergy with name ${createAllergyDto.name} does not exist in the database`,
+      );
+    }
+
+    report.allergies.push(existingAllergy);
     await PCRRepository.save(report);
 
     return {
       status: HttpStatus.CREATED,
       message: 'Allergy added to report successfully',
-      data: newAllergy,
+      data: existingAllergy,
     };
   }
 
@@ -501,7 +587,18 @@ export class PatientCareReportService extends BaseHospitalService {
 
   async removeAllergyFromReport(allergyId: number) {
     const allergyRepository = await this.getRepository(Allergy);
-    await allergyRepository.delete(allergyId);
+    const allergy = await allergyRepository.findOne({
+      where: { id: allergyId },
+      relations: ['PCR'],
+    });
+
+    if (!allergy) {
+      throw new NotFoundException(`Allergy with id ${allergyId} not found`);
+    }
+
+    // Remove the allergy from all associated PCRs
+    allergy.PCR = [];
+    await allergyRepository.save(allergy);
 
     return {
       status: HttpStatus.OK,
@@ -526,16 +623,23 @@ export class PatientCareReportService extends BaseHospitalService {
       throw new NotFoundException(`Report with id ${reportId} not found`);
     }
 
-    const newMedicalCondition = medicalConditionRepository.create(
-      createMedicalConditionDto,
-    );
-    report.medicalConditions.push(newMedicalCondition);
+    const existingMedicalCondition = await medicalConditionRepository.findOne({
+      where: { name: createMedicalConditionDto.name },
+    });
+
+    if (!existingMedicalCondition) {
+      throw new BadRequestException(
+        `Medical condition with name ${createMedicalConditionDto.name} does not exist in the database`,
+      );
+    }
+
+    report.medicalConditions.push(existingMedicalCondition);
     await PCRRepository.save(report);
 
     return {
       status: HttpStatus.CREATED,
       message: 'Medical condition added to report successfully',
-      data: newMedicalCondition,
+      data: existingMedicalCondition,
     };
   }
 
@@ -570,7 +674,20 @@ export class PatientCareReportService extends BaseHospitalService {
   async removeMedicalConditionFromReport(medicalConditionId: number) {
     const medicalConditionRepository =
       await this.getRepository(MedicalCondition);
-    await medicalConditionRepository.delete(medicalConditionId);
+    const medicalCondition = await medicalConditionRepository.findOne({
+      where: { id: medicalConditionId },
+      relations: ['PCR'],
+    });
+
+    if (!medicalCondition) {
+      throw new NotFoundException(
+        `Medical condition with id ${medicalConditionId} not found`,
+      );
+    }
+
+    // Remove the medical condition from all associated PCRs
+    medicalCondition.PCR = [];
+    await medicalConditionRepository.save(medicalCondition);
 
     return {
       status: HttpStatus.OK,
