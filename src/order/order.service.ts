@@ -14,11 +14,12 @@ import { OrderItem } from 'src/entities/order-item.entity';
 import { Supplier } from 'src/entities/supplier.entity';
 import { Medication } from 'src/entities/medication.entity';
 import { Equipment } from 'src/entities/equipment.entity';
+import { Status } from 'src/enums/status.enums';
 import { UpdateHistory } from 'src/entities/updateHistory.entity';
 import { OrderStatus } from 'src/enums/orderStatus.enums';
 import { MailService } from 'src/mail/mail.service';
 import { UserService } from 'src/user/user.service';
-import { Unit } from 'src/entities/unit.entity';
+import { User } from 'src/entities/main/user.entity';
 
 @Injectable()
 export class OrderService extends BaseHospitalService {
@@ -37,7 +38,6 @@ export class OrderService extends BaseHospitalService {
     const supplierRepository = await this.getRepository(Supplier);
     const medicationRepository = await this.getRepository(Medication);
     const equipmentRepository = await this.getRepository(Equipment);
-    const unitRepository = await this.getRepository(Unit);
 
     // Validate supplier exists
     const supplier = await supplierRepository.findOne({
@@ -79,17 +79,10 @@ export class OrderService extends BaseHospitalService {
             `Medication with id ${itemDto.medicationId} not found`,
           );
         }
-        const unit = await unitRepository.findOne({
-          where: { abbreviation: itemDto.unit },
-        });
-        if (!unit) {
-          throw new BadRequestException(`Unit ${itemDto.unit} does not exist`);
-        }
         orderItem = orderItemRepository.create({
           order,
           medication,
           quantity: itemDto.quantity,
-          unit, // Associate the unit
         });
       } else {
         const equipment = await equipmentRepository.findOne({
@@ -100,17 +93,10 @@ export class OrderService extends BaseHospitalService {
             `Equipment with id ${itemDto.equipmentId} not found`,
           );
         }
-        const unit = await unitRepository.findOne({
-          where: { abbreviation: itemDto.unit },
-        });
-        if (!unit) {
-          throw new BadRequestException(`Unit ${itemDto.unit} does not exist`);
-        }
         orderItem = orderItemRepository.create({
           order,
           equipment,
           quantity: itemDto.quantity,
-          unit, // Associate the unit
         });
       }
 
@@ -124,7 +110,6 @@ export class OrderService extends BaseHospitalService {
         'orderItems',
         'orderItems.medication',
         'orderItems.equipment',
-        'orderItems.unit', // Include unit in the relations
         'supplier',
       ],
     });
@@ -157,7 +142,6 @@ export class OrderService extends BaseHospitalService {
         'orderItems.medication',
         'orderItems.equipment',
         'supplier',
-        'orderItems.unit',
       ],
     });
     return {
@@ -176,7 +160,6 @@ export class OrderService extends BaseHospitalService {
         'orderItems.medication',
         'orderItems.equipment',
         'supplier',
-        'orderItems.unit',
       ],
     });
     if (!order) {
@@ -201,7 +184,6 @@ export class OrderService extends BaseHospitalService {
         'orderItems',
         'orderItems.medication',
         'orderItems.equipment',
-        'orderItems.unit', // Include unit in the relations
       ],
     });
     if (!order) {
@@ -255,7 +237,6 @@ export class OrderService extends BaseHospitalService {
     const orderRepository = await this.getRepository(Order);
     const order = await orderRepository.findOne({
       where: { id },
-      relations: ['orderItems', 'orderItems.unit'], // Include unit in the relations
     });
     if (!order) {
       throw new NotFoundException('Order not found');

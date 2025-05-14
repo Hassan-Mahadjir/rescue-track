@@ -2,14 +2,14 @@ import {
   Column,
   Entity,
   JoinColumn,
+  JoinTable,
   ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { PatientCareReport } from './patient-care-report.entity';
 import { TreatmentCategory } from 'src/enums/treatmentCategory.enums';
-import { Unit } from './unit.entity';
-import { Medication } from './medication.entity';
+import { Unit } from 'src/enums/unit.enums';
 
 @Entity()
 export class Treatment {
@@ -22,20 +22,14 @@ export class Treatment {
   @Column()
   quantity: number;
 
-  @ManyToOne(() => Unit, (unit) => unit.treatments, { eager: true })
-  @JoinColumn()
-  unit: Unit; // Use a ManyToOne relationship for unit
-
-  @ManyToOne(() => Medication, (medication) => medication.treatments, {
-    nullable: false,
-  })
-  @JoinColumn()
-  medication: Medication; // Associate Treatment with a Medication
+  @Column({ type: 'enum', enum: Unit, default: Unit.MG })
+  unit: string;
 
   @Column({ type: 'enum', enum: TreatmentCategory })
   category: TreatmentCategory;
 
   // Relationship with PCR
   @ManyToMany(() => PatientCareReport, (PCR) => PCR.treatments)
+  @JoinTable()
   PCR: PatientCareReport[];
 }

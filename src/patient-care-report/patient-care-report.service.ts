@@ -24,7 +24,6 @@ import { UpdateMedicalConditionDto } from './dto/update-medical-condition.dto';
 import { Request } from 'express';
 import { BaseHospitalService } from 'src/database/base-hospital.service';
 import { DatabaseConnectionService } from 'src/database/database.service';
-import { Unit } from 'src/entities/unit.entity';
 
 @Injectable()
 export class PatientCareReportService extends BaseHospitalService {
@@ -167,13 +166,7 @@ export class PatientCareReportService extends BaseHospitalService {
   async findAll() {
     const PCRRepository = await this.getRepository(PatientCareReport);
     const reports = await PCRRepository.find({
-      relations: [
-        'treatments',
-        'treatments.unit',
-        'patient',
-        'allergies',
-        'medicalConditions',
-      ],
+      relations: ['treatments', 'patient', 'allergies', 'medicalConditions'],
     });
 
     return {
@@ -187,13 +180,7 @@ export class PatientCareReportService extends BaseHospitalService {
     const PCRRepository = await this.getRepository(PatientCareReport);
     const report = await PCRRepository.findOne({
       where: { id: id },
-      relations: [
-        'treatments',
-        'treatments.unit',
-        'patient',
-        'allergies',
-        'medicalConditions',
-      ],
+      relations: ['treatments', 'patient', 'allergies', 'medicalConditions'],
     });
 
     if (!report)
@@ -220,13 +207,7 @@ export class PatientCareReportService extends BaseHospitalService {
         createdAt: MoreThan(twentyFourHoursAgo),
         createdById: userId,
       },
-      relations: [
-        'treatments',
-        'treatments.unit',
-        'patient',
-        'allergies',
-        'medicalConditions',
-      ],
+      relations: ['treatments', 'patient', 'allergies', 'medicalConditions'],
     });
     if (!PCR)
       throw new NotFoundException(`No matching report found or access denied`);
@@ -251,13 +232,7 @@ export class PatientCareReportService extends BaseHospitalService {
         createdAt: MoreThan(twentyFourHoursAgo),
         createdById: initiatedByID,
       },
-      relations: [
-        'treatments',
-        'treatments.unit',
-        'patient',
-        'allergies',
-        'medicalConditions',
-      ],
+      relations: ['treatments', 'patient', 'allergies', 'medicalConditions'],
     });
 
     if (!PCRs)
@@ -285,13 +260,7 @@ export class PatientCareReportService extends BaseHospitalService {
 
     const report = await PCRRepository.findOne({
       where: { id },
-      relations: [
-        'treatments',
-        'treatments.unit',
-        'patient',
-        'allergies',
-        'medicalConditions',
-      ],
+      relations: ['treatments', 'patient', 'allergies', 'medicalConditions'],
     });
 
     if (!report) {
@@ -306,7 +275,6 @@ export class PatientCareReportService extends BaseHospitalService {
         where: {
           name: In(updatePatientCareReportDto.treatments.map((t) => t.name)),
         },
-        relations: ['unit'], // Include unit in the relations
       });
 
       const missingTreatments = updatePatientCareReportDto.treatments
@@ -482,54 +450,32 @@ export class PatientCareReportService extends BaseHospitalService {
   ) {
     const PCRRepository = await this.getRepository(PatientCareReport);
     const treatmentRepository = await this.getRepository(Treatment);
-    const unitRepository = await this.getRepository(Unit);
 
     const report = await PCRRepository.findOne({
       where: { id: reportId },
       relations: ['treatments'],
     });
 
-    if (!report) {
+    if (!report)
       throw new NotFoundException(`Report with id ${reportId} not found`);
-    }
 
-    // Check if the treatment already exists
-    let treatment = await treatmentRepository.findOne({
+    const existingTreatment = await treatmentRepository.findOne({
       where: { name: createTreatmentDto.name },
-      relations: ['unit'],
     });
 
-    if (!treatment) {
-      // Find the unit
-      const unit = await unitRepository.findOne({
-        where: { abbreviation: createTreatmentDto.unit },
-      });
-
-      if (!unit) {
-        throw new BadRequestException(
-          `Unit ${createTreatmentDto.unit} does not exist`,
-        );
-      }
-
-      // Create a new treatment
-      treatment = treatmentRepository.create({
-        name: createTreatmentDto.name,
-        quantity: createTreatmentDto.quantity,
-        category: createTreatmentDto.category,
-        unit, // Associate the unit
-      });
-
-      await treatmentRepository.save(treatment);
+    if (!existingTreatment) {
+      throw new BadRequestException(
+        `Treatment with name ${createTreatmentDto.name} does not exist in the database`,
+      );
     }
 
-    // Add the treatment to the report
-    report.treatments.push(treatment);
+    report.treatments.push(existingTreatment);
     await PCRRepository.save(report);
 
     return {
       status: HttpStatus.CREATED,
       message: 'Treatment added to report successfully',
-      data: treatment,
+      data: existingTreatment,
     };
   }
 
@@ -538,30 +484,14 @@ export class PatientCareReportService extends BaseHospitalService {
     updateTreatmentDto: UpdateTreatmentDto,
   ) {
     const treatmentRepository = await this.getRepository(Treatment);
-    const unitRepository = await this.getRepository(Unit);
 
     const treatment = await treatmentRepository.findOne({
       where: { id: treatmentId },
-      relations: ['unit'],
+      relations: ['PCR'],
     });
 
     if (!treatment) {
       throw new NotFoundException(`Treatment with id ${treatmentId} not found`);
-    }
-
-    // Update the unit if provided
-    if (updateTreatmentDto.unit) {
-      const unit = await unitRepository.findOne({
-        where: { abbreviation: updateTreatmentDto.unit },
-      });
-
-      if (!unit) {
-        throw new BadRequestException(
-          `Unit ${updateTreatmentDto.unit} does not exist`,
-        );
-      }
-
-      treatment.unit = unit;
     }
 
     Object.assign(treatment, updateTreatmentDto);
@@ -578,7 +508,7 @@ export class PatientCareReportService extends BaseHospitalService {
     const treatmentRepository = await this.getRepository(Treatment);
     const treatment = await treatmentRepository.findOne({
       where: { id: treatmentId },
-      relations: ['PCR', 'unit'], // Include unit in the relations
+      relations: ['PCR'],
     });
 
     if (!treatment) {
@@ -767,38 +697,16 @@ export class PatientCareReportService extends BaseHospitalService {
 
   async createTreatments(createTreatmentDto: TreatmentDto[]) {
     const treatmentRepository = await this.getRepository(Treatment);
-    const unitRepository = await this.getRepository(Unit);
-
-    for (const treatmentDto of createTreatmentDto) {
-      // Check if the treatment already exists
+    for (let index = 0; index < createTreatmentDto.length; index++) {
+      let treatment = createTreatmentDto[index];
       const existingTreatment = await treatmentRepository.findOne({
-        where: { name: treatmentDto.name },
+        where: { name: treatment.name },
       });
-
       if (!existingTreatment) {
-        // Find the unit
-        const unit = await unitRepository.findOne({
-          where: { abbreviation: treatmentDto.unit },
-        });
-
-        if (!unit) {
-          throw new BadRequestException(
-            `Unit ${treatmentDto.unit} does not exist`,
-          );
-        }
-
-        // Create new treatment
-        const newTreatment = treatmentRepository.create({
-          name: treatmentDto.name,
-          quantity: treatmentDto.quantity,
-          category: treatmentDto.category,
-          unit, // Associate the unit
-        });
-
+        let newTreatment = treatmentRepository.create(treatment);
         await treatmentRepository.save(newTreatment);
       }
     }
-
     return {
       status: HttpStatus.CREATED,
       message: 'Treatments created successfully',

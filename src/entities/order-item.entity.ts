@@ -8,7 +8,6 @@ import {
 import { Order } from './order.entity';
 import { Medication } from './medication.entity';
 import { Equipment } from './equipment.entity';
-import { Unit } from './unit.entity';
 
 @Entity()
 export class OrderItem {
@@ -35,10 +34,4 @@ export class OrderItem {
   })
   @JoinColumn()
   equipment: Equipment;
-
-  @ManyToOne(() => Unit, (unit) => unit.orderItems, {
-    nullable: true,
-  })
-  @JoinColumn()
-  unit: Unit; // Use a ManyToOne relationship for unit
 }
