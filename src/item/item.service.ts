@@ -12,6 +12,7 @@ import { Medication } from 'src/entities/medication.entity';
 import { Equipment } from 'src/entities/equipment.entity';
 import { TreatmentCategory } from 'src/enums/treatmentCategory.enums';
 import { EquipmentType } from 'src/enums/equipmentType.enums';
+import { Unit } from 'src/entities/unit.entity';
 
 @Injectable()
 export class ItemService extends BaseHospitalService {
@@ -29,12 +30,24 @@ export class ItemService extends BaseHospitalService {
   ) {
     const medicationRepository = await this.getRepository(Medication);
     const equipmentRepository = await this.getRepository(Equipment);
+    const unitRepository = await this.getRepository(Unit);
 
     if (itemType === 'medication') {
+      const medicationDto = createItemDto as CreateMedicationDto; // Type assertion for medication
+      const unit = await unitRepository.findOne({
+        where: { abbreviation: medicationDto.unit },
+      });
+      if (!unit) {
+        throw new NotFoundException(
+          `Unit ${medicationDto.unit} does not exist`,
+        );
+      }
+
       const medication = medicationRepository.create({
-        ...createItemDto,
+        ...medicationDto,
         createdById: userId,
-        category: createItemDto.category as TreatmentCategory,
+        category: medicationDto.category as TreatmentCategory,
+        unit, // Associate the unit
       });
       await medicationRepository.save(medication);
       return {
@@ -62,7 +75,7 @@ export class ItemService extends BaseHospitalService {
     const equipmentRepository = await this.getRepository(Equipment);
 
     const medications = await medicationRepository.find({
-      relations: ['supplier'],
+      relations: ['supplier', 'unit'], // Include unit in relations
     });
     const equipments = await equipmentRepository.find({
       relations: ['supplier'],
@@ -82,7 +95,7 @@ export class ItemService extends BaseHospitalService {
     if (itemType === 'medication') {
       const medication = await medicationRepository.findOne({
         where: { id },
-        relations: ['supplier'],
+        relations: ['supplier', 'unit'], // Include unit in relations
       });
       if (!medication) {
         throw new NotFoundException('Medication not found');
