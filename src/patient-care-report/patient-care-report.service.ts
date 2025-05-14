@@ -26,6 +26,7 @@ import { BaseHospitalService } from 'src/database/base-hospital.service';
 import { DatabaseConnectionService } from 'src/database/database.service';
 import { Unit } from 'src/entities/unit.entity';
 import { Medication } from 'src/entities/medication.entity';
+import { convertUnit } from 'src/functions/conversion';
 
 @Injectable()
 export class PatientCareReportService extends BaseHospitalService {
@@ -101,6 +102,7 @@ export class PatientCareReportService extends BaseHospitalService {
         if (!treatment) {
           const medication = await medicationRepository.findOne({
             where: { name: treatmentDto.name },
+            relations: ['unit'],
           });
 
           if (!medication) {
@@ -116,6 +118,23 @@ export class PatientCareReportService extends BaseHospitalService {
               `Unit ${treatmentDto.unit} does not exist`,
             );
           }
+          const value = Math.round(
+            convertUnit(
+              treatmentDto.quantity,
+              treatmentDto.unit,
+              medication.unit.abbreviation,
+            ),
+          );
+          if (medication.stockQuantity < value) {
+            throw new BadRequestException(
+              `Medication ${treatmentDto.name} does not have enough stock quantity `,
+            );
+          }
+          // update medicaiton stock
+          const newStockQuantity = medication.stockQuantity - value;
+          medication.stockQuantity = newStockQuantity;
+          await medicationRepository.save(medication);
+          // Create a new treatment
           treatment = treatmentRepository.create({
             name: treatmentDto.name,
             quantity: treatmentDto.quantity,
@@ -126,7 +145,7 @@ export class PatientCareReportService extends BaseHospitalService {
 
           await treatmentRepository.save(treatment);
         }
-
+        // Check if the unit exists
         return treatment;
       }),
     );
