@@ -10,7 +10,8 @@ import {
 } from 'typeorm';
 import { Supplier } from './supplier.entity';
 import { OrderItem } from './order-item.entity';
-import { Unit } from 'src/enums/unit.enums';
+import { Unit } from './unit.entity';
+import { Treatment } from './treatment.entity'; // Import Treatment entity
 
 @Entity()
 export class Medication {
@@ -33,9 +34,6 @@ export class Medication {
   @Column()
   stockQuantity: number;
 
-  @Column({ type: 'enum', enum: Unit, default: Unit.MG })
-  unit: Unit;
-
   @Column()
   expirationDate: Date;
 
@@ -54,4 +52,15 @@ export class Medication {
 
   @OneToMany(() => OrderItem, (orderItem) => orderItem.medication)
   orderItems: OrderItem[];
+
+  @ManyToOne(() => Unit, (unit) => unit.medications, {
+    nullable: true,
+  })
+  @JoinColumn()
+  unit: Unit; // Use a ManyToOne relationship for unit
+
+  @OneToMany(() => Treatment, (treatment) => treatment.medication, {
+    nullable: true,
+  })
+  treatments: Treatment[]; // Track treatments associated with this medication
 }
