@@ -516,13 +516,12 @@ export class PatientCareReportService extends BaseHospitalService {
         name: createTreatmentDto.name,
         quantity: createTreatmentDto.quantity,
         category: createTreatmentDto.category,
-        unit, // Associate the unit
+        unit,
       });
 
       await treatmentRepository.save(treatment);
     }
 
-    // Add the treatment to the report
     report.treatments.push(treatment);
     await PCRRepository.save(report);
 
