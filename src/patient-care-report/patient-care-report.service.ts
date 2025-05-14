@@ -167,7 +167,13 @@ export class PatientCareReportService extends BaseHospitalService {
   async findAll() {
     const PCRRepository = await this.getRepository(PatientCareReport);
     const reports = await PCRRepository.find({
-      relations: ['treatments', 'patient', 'allergies', 'medicalConditions'],
+      relations: [
+        'treatments',
+        'treatments.unit',
+        'patient',
+        'allergies',
+        'medicalConditions',
+      ],
     });
 
     return {
@@ -181,7 +187,13 @@ export class PatientCareReportService extends BaseHospitalService {
     const PCRRepository = await this.getRepository(PatientCareReport);
     const report = await PCRRepository.findOne({
       where: { id: id },
-      relations: ['treatments', 'patient', 'allergies', 'medicalConditions'],
+      relations: [
+        'treatments',
+        'treatments.unit',
+        'patient',
+        'allergies',
+        'medicalConditions',
+      ],
     });
 
     if (!report)
@@ -208,7 +220,13 @@ export class PatientCareReportService extends BaseHospitalService {
         createdAt: MoreThan(twentyFourHoursAgo),
         createdById: userId,
       },
-      relations: ['treatments', 'patient', 'allergies', 'medicalConditions'],
+      relations: [
+        'treatments',
+        'treatments.unit',
+        'patient',
+        'allergies',
+        'medicalConditions',
+      ],
     });
     if (!PCR)
       throw new NotFoundException(`No matching report found or access denied`);
@@ -233,7 +251,13 @@ export class PatientCareReportService extends BaseHospitalService {
         createdAt: MoreThan(twentyFourHoursAgo),
         createdById: initiatedByID,
       },
-      relations: ['treatments', 'patient', 'allergies', 'medicalConditions'],
+      relations: [
+        'treatments',
+        'treatments.unit',
+        'patient',
+        'allergies',
+        'medicalConditions',
+      ],
     });
 
     if (!PCRs)
@@ -261,7 +285,13 @@ export class PatientCareReportService extends BaseHospitalService {
 
     const report = await PCRRepository.findOne({
       where: { id },
-      relations: ['treatments', 'patient', 'allergies', 'medicalConditions'],
+      relations: [
+        'treatments',
+        'treatments.unit',
+        'patient',
+        'allergies',
+        'medicalConditions',
+      ],
     });
 
     if (!report) {
@@ -276,6 +306,7 @@ export class PatientCareReportService extends BaseHospitalService {
         where: {
           name: In(updatePatientCareReportDto.treatments.map((t) => t.name)),
         },
+        relations: ['unit'], // Include unit in the relations
       });
 
       const missingTreatments = updatePatientCareReportDto.treatments
@@ -458,11 +489,14 @@ export class PatientCareReportService extends BaseHospitalService {
       relations: ['treatments'],
     });
 
-    if (!report)
+    if (!report) {
       throw new NotFoundException(`Report with id ${reportId} not found`);
+    }
 
-    const existingTreatment = await treatmentRepository.findOne({
+    // Check if the treatment already exists
+    let treatment = await treatmentRepository.findOne({
       where: { name: createTreatmentDto.name },
+      relations: ['unit'],
     });
 
     if (!treatment) {
@@ -494,7 +528,7 @@ export class PatientCareReportService extends BaseHospitalService {
     return {
       status: HttpStatus.CREATED,
       message: 'Treatment added to report successfully',
-      data: existingTreatment,
+      data: treatment,
     };
   }
 
@@ -503,14 +537,30 @@ export class PatientCareReportService extends BaseHospitalService {
     updateTreatmentDto: UpdateTreatmentDto,
   ) {
     const treatmentRepository = await this.getRepository(Treatment);
+    const unitRepository = await this.getRepository(Unit);
 
     const treatment = await treatmentRepository.findOne({
       where: { id: treatmentId },
-      relations: ['PCR'],
+      relations: ['unit'],
     });
 
     if (!treatment) {
       throw new NotFoundException(`Treatment with id ${treatmentId} not found`);
+    }
+
+    // Update the unit if provided
+    if (updateTreatmentDto.unit) {
+      const unit = await unitRepository.findOne({
+        where: { abbreviation: updateTreatmentDto.unit },
+      });
+
+      if (!unit) {
+        throw new BadRequestException(
+          `Unit ${updateTreatmentDto.unit} does not exist`,
+        );
+      }
+
+      treatment.unit = unit;
     }
 
     Object.assign(treatment, updateTreatmentDto);
@@ -527,7 +577,7 @@ export class PatientCareReportService extends BaseHospitalService {
     const treatmentRepository = await this.getRepository(Treatment);
     const treatment = await treatmentRepository.findOne({
       where: { id: treatmentId },
-      relations: ['PCR'],
+      relations: ['PCR', 'unit'], // Include unit in the relations
     });
 
     if (!treatment) {
@@ -723,6 +773,7 @@ export class PatientCareReportService extends BaseHospitalService {
       const existingTreatment = await treatmentRepository.findOne({
         where: { name: treatmentDto.name },
       });
+
       if (!existingTreatment) {
         // Find the unit
         const unit = await unitRepository.findOne({
@@ -746,6 +797,7 @@ export class PatientCareReportService extends BaseHospitalService {
         await treatmentRepository.save(newTreatment);
       }
     }
+
     return {
       status: HttpStatus.CREATED,
       message: 'Treatments created successfully',
