@@ -580,6 +580,19 @@ export class PatientCareReportService extends BaseHospitalService {
       );
     }
 
+    // Check if the allergy is already linked to the report
+    const isDuplicate = report.allergies.some(
+      (allergy) =>
+        allergy.name.toLowerCase() === createAllergyDto.name.toLowerCase(),
+    );
+
+    if (isDuplicate) {
+      return {
+        status: HttpStatus.CONFLICT,
+        message: `Allergy "${createAllergyDto.name}" already exists in the report`,
+      };
+    }
+
     report.allergies.push(existingAllergy);
     await PCRRepository.save(report);
 
@@ -652,23 +665,36 @@ export class PatientCareReportService extends BaseHospitalService {
       throw new NotFoundException(`Report with id ${reportId} not found`);
     }
 
-    const existingMedicalCondition = await medicalConditionRepository.findOne({
-      where: { name: createMedicalConditionDto.name },
-    });
+    // Check if the condition already exists in the report
+    const isDuplicate = report.medicalConditions.some(
+      (condition) =>
+        condition.name.toLowerCase() ===
+        createMedicalConditionDto.name.toLowerCase(),
+    );
 
-    if (!existingMedicalCondition) {
-      throw new BadRequestException(
-        `Medical condition with name ${createMedicalConditionDto.name} does not exist in the database`,
-      );
+    if (isDuplicate) {
+      return {
+        status: HttpStatus.CONFLICT,
+        message: 'Medical condition already exists in the report',
+      };
     }
 
-    report.medicalConditions.push(existingMedicalCondition);
+    // Create a new medical condition entity
+    const newMedicalCondition = medicalConditionRepository.create(
+      createMedicalConditionDto,
+    );
+
+    // Save the new condition to the database (optional depending on your model setup)
+    await medicalConditionRepository.save(newMedicalCondition);
+
+    // Add the condition to the report
+    report.medicalConditions.push(newMedicalCondition);
     await PCRRepository.save(report);
 
     return {
       status: HttpStatus.CREATED,
       message: 'Medical condition added to report successfully',
-      data: existingMedicalCondition,
+      data: newMedicalCondition,
     };
   }
 
