@@ -59,8 +59,8 @@ export class Medication {
   @JoinColumn()
   unit: Unit; // Use a ManyToOne relationship for unit
 
-  @OneToMany(() => Treatment, (treatment) => treatment.medication, {
-    nullable: true,
-  })
-  treatments: Treatment[]; // Track treatments associated with this medication
+  // @OneToMany(() => Treatment, (treatment) => treatment.medication, {
+  //   nullable: true,
+  // })
+  // treatments: Treatment[]; // Track treatments associated with this medication
 }

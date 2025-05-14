@@ -17,6 +17,5 @@ export class MedicalCondition {
 
   // Relationship with PatientCareReport
   @ManyToMany(() => PatientCareReport, (PCR) => PCR.medicalConditions)
-  @JoinTable()
   PCR: PatientCareReport[];
 }

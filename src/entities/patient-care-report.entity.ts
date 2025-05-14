@@ -59,7 +59,7 @@ export class PatientCareReport {
 
   //Relationship with Treatment
   @ManyToMany(() => Treatment, (treatment) => treatment.PCR)
-  @JoinTable()
+  @JoinTable({ name: 'PCR-Treatment' })
   treatments: Treatment[];
 
   // Relationship with Run-Report
@@ -73,11 +73,11 @@ export class PatientCareReport {
     () => MedicalCondition,
     (medicalCondition) => medicalCondition.PCR,
   )
-  @JoinTable()
+  @JoinTable({ name: 'PCR-MedicalCondition' })
   medicalConditions: MedicalCondition[];
 
   // Relationship with Allergy
   @ManyToMany(() => Allergy, (allergy) => allergy.PCR)
-  @JoinTable()
+  @JoinTable({ name: 'PCR-Allergy' })
   allergies: Allergy[];
 }

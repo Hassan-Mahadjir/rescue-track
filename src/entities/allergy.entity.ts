@@ -17,6 +17,5 @@ export class Allergy {
 
   // Relationship with PatientCareReport
   @ManyToMany(() => PatientCareReport, (PCR) => PCR.allergies)
-  @JoinTable()
   PCR: PatientCareReport[];
 }

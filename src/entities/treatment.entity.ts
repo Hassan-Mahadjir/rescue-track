@@ -26,11 +26,11 @@ export class Treatment {
   @JoinColumn()
   unit: Unit; // Use a ManyToOne relationship for unit
 
-  @ManyToOne(() => Medication, (medication) => medication.treatments, {
-    nullable: false,
-  })
-  @JoinColumn()
-  medication: Medication; // Associate Treatment with a Medication
+  // @ManyToOne(() => Medication, (medication) => medication.treatments, {
+  //   nullable: false,
+  // })
+  // @JoinColumn()
+  // medication: Medication; // Associate Treatment with a Medication
 
   @Column({ type: 'enum', enum: TreatmentCategory })
   category: TreatmentCategory;
