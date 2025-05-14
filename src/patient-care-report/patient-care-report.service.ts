@@ -25,6 +25,7 @@ import { Request } from 'express';
 import { BaseHospitalService } from 'src/database/base-hospital.service';
 import { DatabaseConnectionService } from 'src/database/database.service';
 import { Unit } from 'src/entities/unit.entity';
+import { Medication } from 'src/entities/medication.entity';
 
 @Injectable()
 export class PatientCareReportService extends BaseHospitalService {
@@ -47,6 +48,8 @@ export class PatientCareReportService extends BaseHospitalService {
     const medicalConditionRepository =
       await this.getRepository(MedicalCondition);
     const allergyRepository = await this.getRepository(Allergy);
+    const medicationRepository = await this.getRepository(Medication);
+    const unitRepository = await this.getRepository(Unit);
 
     const runReport = await runReportRepository.findOne({
       where: { id: createPatientCareReportDto.runReportId },
@@ -82,26 +85,51 @@ export class PatientCareReportService extends BaseHospitalService {
       );
     }
 
-    // check if treatments exist
-    const existingTreatments = await treatmentRepository.find({
-      where: {
-        name: In(createPatientCareReportDto.treatments.map((t) => t.name)),
-      },
-    });
+    // Ensure treatments exist in the treatment table
+    const treatments = await Promise.all(
+      createPatientCareReportDto.treatments.map(async (treatmentDto) => {
+        if (!treatmentDto.category) {
+          throw new BadRequestException(
+            `Category is required for treatment ${treatmentDto.name}`,
+          );
+        }
 
-    // Check if all treatments exist
-    const missingTreatments = createPatientCareReportDto.treatments
-      .filter(
-        (treatment) =>
-          !existingTreatments.some((et) => et.name === treatment.name),
-      )
-      .map((t) => t.name);
+        let treatment = await treatmentRepository.findOne({
+          where: { name: treatmentDto.name },
+        });
 
-    if (missingTreatments.length > 0) {
-      throw new BadRequestException(
-        `The following treatments do not exist in the database: ${missingTreatments.join(', ')}`,
-      );
-    }
+        if (!treatment) {
+          const medication = await medicationRepository.findOne({
+            where: { name: treatmentDto.name },
+          });
+
+          if (!medication) {
+            throw new BadRequestException(
+              `Medication ${treatmentDto.name} does not exist in the database`,
+            );
+          }
+          const unit = await unitRepository.findOne({
+            where: { abbreviation: treatmentDto.unit },
+          });
+          if (!unit) {
+            throw new BadRequestException(
+              `Unit ${treatmentDto.unit} does not exist`,
+            );
+          }
+          treatment = treatmentRepository.create({
+            name: treatmentDto.name,
+            quantity: treatmentDto.quantity,
+            category: treatmentDto.category,
+            unit: unit,
+            medication,
+          });
+
+          await treatmentRepository.save(treatment);
+        }
+
+        return treatment;
+      }),
+    );
 
     // Check if medical conditions exist
     const existingMedicalConditions = await medicalConditionRepository.find({
@@ -145,11 +173,12 @@ export class PatientCareReportService extends BaseHospitalService {
       );
     }
 
+    // Use the treatments array for the new PCR
     const newPCR = PCRRepository.create({
       ...createPatientCareReportDto,
-      patient,
+      patient: patient as Patient, // Ensure the type matches
       createdById: initiatedPersonId,
-      treatments: existingTreatments,
+      treatments, // Updated to use the treatments array
       medicalConditions: existingMedicalConditions,
       allergies: existingAllergies,
       runReport,
@@ -483,6 +512,7 @@ export class PatientCareReportService extends BaseHospitalService {
     const PCRRepository = await this.getRepository(PatientCareReport);
     const treatmentRepository = await this.getRepository(Treatment);
     const unitRepository = await this.getRepository(Unit);
+    const medicationRepository = await this.getRepository(Medication);
 
     const report = await PCRRepository.findOne({
       where: { id: reportId },
@@ -512,11 +542,19 @@ export class PatientCareReportService extends BaseHospitalService {
       }
 
       // Create a new treatment
+      const medication = await medicationRepository.findOne({
+        where: { name: createTreatmentDto.name },
+      });
+      if (!medication) {
+        throw new BadRequestException('Medication does not exist');
+      }
+
       treatment = treatmentRepository.create({
         name: createTreatmentDto.name,
         quantity: createTreatmentDto.quantity,
         category: createTreatmentDto.category,
         unit, // Associate the unit
+        medication,
       });
 
       await treatmentRepository.save(treatment);
@@ -767,16 +805,27 @@ export class PatientCareReportService extends BaseHospitalService {
 
   async createTreatments(createTreatmentDto: TreatmentDto[]) {
     const treatmentRepository = await this.getRepository(Treatment);
+    const medicationRepository = await this.getRepository(Medication);
     const unitRepository = await this.getRepository(Unit);
 
     for (const treatmentDto of createTreatmentDto) {
       // Check if the treatment already exists
       const existingTreatment = await treatmentRepository.findOne({
         where: { name: treatmentDto.name },
+        relations: ['medication'],
       });
 
       if (!existingTreatment) {
         // Find the unit
+        const medication = await medicationRepository.findOne({
+          where: { name: treatmentDto.name },
+        });
+        if (!medication) {
+          throw new BadRequestException(
+            `Medication ${treatmentDto.name} does not exist`,
+          );
+        }
+
         const unit = await unitRepository.findOne({
           where: { abbreviation: treatmentDto.unit },
         });
@@ -793,6 +842,7 @@ export class PatientCareReportService extends BaseHospitalService {
           quantity: treatmentDto.quantity,
           category: treatmentDto.category,
           unit, // Associate the unit
+          medication,
         });
 
         await treatmentRepository.save(newTreatment);
