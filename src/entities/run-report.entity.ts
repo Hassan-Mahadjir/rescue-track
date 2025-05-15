@@ -85,7 +85,10 @@ export class RunReport {
   updateHistory: UpdateHistory[];
 
   // Relationship with PCR
-  @OneToOne(() => PatientCareReport, (PCR) => PCR, { nullable: true })
+  @OneToOne(() => PatientCareReport, (PCR) => PCR, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   @JoinColumn()
   patientCareReport: PatientCareReport | null;
 }

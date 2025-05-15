@@ -393,6 +393,7 @@ export class PatientCareReportService extends BaseHospitalService {
         'allergies',
         'medicalConditions',
         'runReport',
+        'treatments.unit',
       ],
     });
 
