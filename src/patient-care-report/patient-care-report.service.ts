@@ -357,9 +357,14 @@ export class PatientCareReportService extends BaseHospitalService {
       report.patient = patient;
     }
 
-    await PCRRepository.save({
-      ...report,
-      updatedById: updatedById,
+    report.updatedById = updatedById;
+
+    await PCRRepository.save(report);
+
+    await PCRRepository.update(id, {
+      primaryAssessment: updatePatientCareReportDto.primaryAssessment,
+      secondaryAssessment: updatePatientCareReportDto.secondaryAssessment,
+      notes: updatePatientCareReportDto.notes,
     });
 
     const history = updateHistoryRepository.create({

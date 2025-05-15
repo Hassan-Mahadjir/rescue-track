@@ -102,7 +102,7 @@ export class PatientService extends BaseHospitalService {
     return {
       status: HttpStatus.FOUND,
       message: 'Patient retrieved successfully',
-      data: { patient, responsible },
+      data: { ...patient, responsible },
     };
   }
 
@@ -127,7 +127,7 @@ export class PatientService extends BaseHospitalService {
     return {
       status: HttpStatus.FOUND,
       message: 'Patient retrieved successfully',
-      data: { patient, responsible },
+      data: { ...patient, responsible },
     };
   }
 
