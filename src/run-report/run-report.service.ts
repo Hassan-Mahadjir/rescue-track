@@ -81,7 +81,7 @@ export class RunReportService extends BaseHospitalService {
     return {
       status: HttpStatus.FOUND,
       message: 'Run report found successfully',
-      data: { report, initiatedBy },
+      data: { ...report, initiatedBy },
     };
   }
 
@@ -107,7 +107,7 @@ export class RunReportService extends BaseHospitalService {
     return {
       status: HttpStatus.FOUND,
       message: 'Run report found successfully.',
-      data: { report, initiatedBy },
+      data: { ...report, initiatedBy },
     };
   }
 

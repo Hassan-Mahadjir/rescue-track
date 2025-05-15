@@ -170,7 +170,7 @@ export class PatientCareReportService extends BaseHospitalService {
     return {
       status: HttpStatus.FOUND,
       message: 'Patient care report found successfully',
-      data: { report, initiatedBy },
+      data: { ...report, initiatedBy },
     };
   }
 
@@ -202,7 +202,7 @@ export class PatientCareReportService extends BaseHospitalService {
     return {
       status: HttpStatus.FOUND,
       message: 'Patient care report found successfully.',
-      data: { PCR, initiatedBy },
+      data: { ...PCR, initiatedBy },
     };
   }
 
@@ -524,7 +524,9 @@ export class PatientCareReportService extends BaseHospitalService {
       treatment.unit = unit;
     }
 
-    Object.assign(treatment, updateTreatmentDto);
+    const { unit, ...rest } = updateTreatmentDto;
+    Object.assign(treatment, rest);
+
     const updatedTreatment = await treatmentRepository.save(treatment);
 
     return {
@@ -571,20 +573,20 @@ export class PatientCareReportService extends BaseHospitalService {
       throw new NotFoundException(`Report with id ${reportId} not found`);
     }
 
-    const existingAllergy = await allergyRepository.findOne({
+    // Check if allergy exists
+    let allergy = await allergyRepository.findOne({
       where: { name: createAllergyDto.name },
     });
 
-    if (!existingAllergy) {
-      throw new BadRequestException(
-        `Allergy with name ${createAllergyDto.name} does not exist in the database`,
-      );
+    // Create new allergy if not found
+    if (!allergy) {
+      allergy = allergyRepository.create({ name: createAllergyDto.name });
+      await allergyRepository.save(allergy);
     }
 
-    // Check if the allergy is already linked to the report
+    // Check if it's already in the report
     const isDuplicate = report.allergies.some(
-      (allergy) =>
-        allergy.name.toLowerCase() === createAllergyDto.name.toLowerCase(),
+      (a) => a.name.toLowerCase() === createAllergyDto.name.toLowerCase(),
     );
 
     if (isDuplicate) {
@@ -594,13 +596,14 @@ export class PatientCareReportService extends BaseHospitalService {
       };
     }
 
-    report.allergies.push(existingAllergy);
+    // Link the allergy to the report
+    report.allergies.push(allergy);
     await PCRRepository.save(report);
 
     return {
       status: HttpStatus.CREATED,
       message: 'Allergy added to report successfully',
-      data: existingAllergy,
+      data: allergy,
     };
   }
 
