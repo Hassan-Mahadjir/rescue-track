@@ -838,4 +838,80 @@ export class PatientCareReportService extends BaseHospitalService {
       message: 'Allergies created successfully',
     };
   }
+
+  async getReportStats() {
+    const runReportRepository = await this.getRepository(RunReport);
+    const PCRRepository = await this.getRepository(PatientCareReport);
+
+    // Fetch PCR counts grouped by date and condition
+    const PCRCounts = await PCRRepository.createQueryBuilder('pcr')
+      .select('DATE(pcr.createdAt)', 'date')
+      .addSelect('pcr.patientCondition', 'condition')
+      .addSelect('COUNT(*)', 'count')
+      .groupBy('DATE(pcr.createdAt)')
+      .addGroupBy('pcr.patientCondition')
+      .orderBy('date', 'ASC')
+      .getRawMany();
+
+    // Fetch RunReport counts grouped by date and priority
+    const runReportCounts = await runReportRepository
+      .createQueryBuilder('runReport')
+      .select('DATE(runReport.createAt)', 'date')
+      .addSelect('runReport.priority', 'priority')
+      .addSelect('COUNT(*)', 'count')
+      .groupBy('DATE(runReport.createAt)')
+      .addGroupBy('runReport.priority')
+      .orderBy('date', 'ASC')
+      .getRawMany();
+
+    // Transform PCR data
+    const PCRGrouped: Record<string, any> = {};
+    for (const row of PCRCounts) {
+      const dateKey = new Date(row.date).toISOString().split('T')[0];
+      if (!PCRGrouped[dateKey]) {
+        PCRGrouped[dateKey] = {
+          date: new Date(dateKey).toISOString(),
+          type: 'PCR',
+          low: 0,
+          medium: 0,
+          high: 0,
+          critical: 0,
+        };
+      }
+
+      const condition = row.condition?.toLowerCase(); // assuming conditions are strings like "Low", "Critical"
+      PCRGrouped[dateKey][condition] = parseInt(row.count, 10);
+    }
+
+    // Transform RunReport data
+    const runReportGrouped: Record<string, any> = {};
+    for (const row of runReportCounts) {
+      const dateKey = new Date(row.date).toISOString().split('T')[0];
+      if (!runReportGrouped[dateKey]) {
+        runReportGrouped[dateKey] = {
+          date: new Date(dateKey).toISOString(),
+          type: 'Run report',
+          stable: 0,
+          serious: 0,
+          good: 0,
+          critical: 0,
+        };
+      }
+
+      const priority = row.priority?.toLowerCase(); // assuming priorities like "Stable", "Critical"
+      runReportGrouped[dateKey][priority] = parseInt(row.count, 10);
+    }
+
+    // Merge both into a single flat array
+    const mergedStats = [
+      ...Object.values(PCRGrouped),
+      ...Object.values(runReportGrouped),
+    ];
+
+    return {
+      status: HttpStatus.FOUND,
+      message: 'Stats data fatched',
+      data: mergedStats,
+    };
+  }
 }

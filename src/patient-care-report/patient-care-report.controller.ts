@@ -50,6 +50,12 @@ export class PatientCareReportController {
     return this.patientCareReportService.findAll();
   }
 
+  @Get('/manage/stats')
+  @Roles(UserRole.ADMIN)
+  getReportStats() {
+    return this.patientCareReportService.getReportStats();
+  }
+
   @Get('/manage/:id')
   @Roles(UserRole.ADMIN)
   findOne(@Param('id') id: string) {
