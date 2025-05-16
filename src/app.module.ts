@@ -32,7 +32,12 @@ import jwtConfig from './auth/config/jwt.config';
     ConfigModule.forRoot({
       isGlobal: true,
       expandVariables: true,
-      load: [dbConfig.primary, dbConfig.secondary, dbConfigProduction],
+      load: [
+        dbConfig.primary,
+        dbConfig.secondary,
+        dbConfigProduction.primary,
+        dbConfigProduction.secondary,
+      ],
     }),
     JwtModule.registerAsync({
       useFactory: () => ({
@@ -45,7 +50,7 @@ import jwtConfig from './auth/config/jwt.config';
       name: 'primary',
       useFactory:
         process.env.NODE_ENV === 'production'
-          ? dbConfigProduction
+          ? dbConfigProduction.primary
           : dbConfig.primary,
     }),
     // Secondary database connection for tenant-specific data
@@ -53,7 +58,7 @@ import jwtConfig from './auth/config/jwt.config';
       name: 'secondary',
       useFactory:
         process.env.NODE_ENV === 'production'
-          ? dbConfigProduction
+          ? dbConfigProduction.secondary
           : dbConfig.secondary,
     }),
     UserModule,

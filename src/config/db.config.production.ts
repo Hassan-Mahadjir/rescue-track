@@ -2,13 +2,25 @@ import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConne
 import * as path from 'path';
 import { registerAs } from '@nestjs/config';
 
-export default registerAs(
-  'dbconfig.production',
-  (): PostgresConnectionOptions => ({
-    url: process.env.DATABASE_URL,
-    type: 'postgres',
-    port: Number(process.env.DB_PORT),
-    entities: [path.resolve(__dirname, '..') + '/**/*.entity{.ts,.js}'],
-    synchronize: false,
-  }),
-);
+export const databaseConfig = {
+  primary: registerAs(
+    'dbconfig.primary',
+    (): PostgresConnectionOptions => ({
+      url: process.env.ATK_DATABASE_URL,
+      type: 'postgres',
+      entities: [path.resolve(__dirname, '../entities/main/*.entity{.ts,.js}')],
+      synchronize: true,
+    }),
+  ),
+  secondary: registerAs(
+    'dbconfig.secondary',
+    (): PostgresConnectionOptions => ({
+      url: process.env.ATK_MAIN_DATABASE_URL,
+      type: 'postgres',
+      entities: [path.resolve(__dirname, '../entities/*.entity{.ts,.js}')],
+      synchronize: true,
+    }),
+  ),
+};
+
+export default databaseConfig;
