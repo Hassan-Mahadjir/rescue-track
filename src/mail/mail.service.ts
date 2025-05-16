@@ -119,6 +119,7 @@ export class MailService {
       <tr>
         <td style="padding: 12px; border: 1px solid #dee2e6;">${item.medication ? item.medication.name : item.equipment.name}</td>
         <td style="padding: 12px; border: 1px solid #dee2e6; text-align: center;">${item.quantity}</td>
+        <td style="padding: 12px; border: 1px solid #dee2e6; text-align: center;">${item.unit.abbreviation}</td>
         <td style="padding: 12px; border: 1px solid #dee2e6;">${item.medication ? 'Medication' : 'Equipment'}</td>
       </tr>
     `,
@@ -158,6 +159,7 @@ export class MailService {
                   <tr style="background-color: #4a90e2;">
                     <th style="padding: 12px; color: white; text-align: left;">Item Name</th>
                     <th style="padding: 12px; color: white; text-align: center;">Quantity</th>
+                    <th style="padding: 12px; color: white; text-align: left;">Unit</th>
                     <th style="padding: 12px; color: white; text-align: left;">Type</th>
                   </tr>
                 </thead>
@@ -184,6 +186,7 @@ export class MailService {
       <tr>
         <td style="padding: 12px; border: 1px solid #dee2e6;">${item.medication ? item.medication.name : item.equipment.name}</td>
         <td style="padding: 12px; border: 1px solid #dee2e6; text-align: center;">${item.quantity}</td>
+        <td style="padding: 12px; border: 1px solid #dee2e6; text-align: center;">${item.unit.abbreviation}</td>
         <td style="padding: 12px; border: 1px solid #dee2e6;">${item.medication ? 'Medication' : 'Equipment'}</td>
       </tr>
     `,
@@ -224,6 +227,142 @@ export class MailService {
                   <tr style="background-color: #2c3e50;">
                     <th style="padding: 12px; color: white; text-align: left;">Item Name</th>
                     <th style="padding: 12px; color: white; text-align: center;">Quantity</th>
+                    <th style="padding: 12px; color: white; text-align: left;">Unit</th>
+                    <th style="padding: 12px; color: white; text-align: left;">Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${orderItemsHtml}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <div style="text-align: center; color: #6c757d; font-size: 14px; margin-top: 20px;">
+            <p>This is an automated message, please do not reply directly to this email.</p>
+          </div>
+        </div>
+      `,
+    };
+    await this.transporter.sendMail(mailOptions);
+  }
+
+  async sendCancelOrderEmailToSupplier(to: string, order: Order, user: User) {
+    const orderItemsHtml = order.orderItems
+      .map(
+        (item) => `
+      <tr>
+        <td style="padding: 12px; border: 1px solid #dee2e6;">${item.medication ? item.medication.name : item.equipment.name}</td>
+        <td style="padding: 12px; border: 1px solid #dee2e6; text-align: center;">${item.quantity}</td>
+        <td style="padding: 12px; border: 1px solid #dee2e6; text-align: center;">${item.unit.abbreviation}</td>
+        <td style="padding: 12px; border: 1px solid #dee2e6;">${item.medication ? 'Medication' : 'Equipment'}</td>
+      </tr>
+    `,
+      )
+      .join('');
+
+    const mailOptions = {
+      from: process.env.GOOGLE_MAIL_USER,
+      to: to,
+      subject: 'Order Cancelled',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 10px; background-color: #ffffff;">
+          <div style="background-color: #4a90e2; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 24px;">New Order Received</h1>
+          </div>
+          
+          <div style="background-color: #f8f9fa; padding: 20px; border: 1px solid #dee2e6; border-radius: 0 0 8px 8px; margin-bottom: 20px;">
+            <div style="margin-bottom: 20px;">
+              <h2 style="color: #2c3e50; font-size: 18px; margin-bottom: 15px; border-bottom: 2px solid #4a90e2; padding-bottom: 10px;">Order Details</h2>
+              <p style="margin: 8px 0;"><strong style="color: #4a90e2;">Order ID:</strong> ${order.id}</p>
+              <p style="margin: 8px 0;"><strong style="color: #4a90e2;">Order Date:</strong> ${order.createdAt.toLocaleString()}</p>
+              <p style="margin: 8px 0;"><strong style="color: #4a90e2;">Status:</strong> ${order.status}</p>
+              <p style="margin: 8px 0;"><strong style="color: #4a90e2;">Notes:</strong> ${order.notes}</p>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+              <h2 style="color: #2c3e50; font-size: 18px; margin-bottom: 15px; border-bottom: 2px solid #4a90e2; padding-bottom: 10px;">Order Creator Details</h2>
+              <p style="margin: 8px 0;"><strong style="color: #4a90e2;">Name:</strong> ${user.profile?.firstName} ${user.profile?.lastName}</p>
+              <p style="margin: 8px 0;"><strong style="color: #4a90e2;">Email:</strong> ${user.email}</p>
+              <p style="margin: 8px 0;"><strong style="color: #4a90e2;">Hospital:</strong> ${user.hospital?.name}</p>
+            </div>
+
+            <div>
+              <h2 style="color: #2c3e50; font-size: 18px; margin-bottom: 15px; border-bottom: 2px solid #4a90e2; padding-bottom: 10px;">Order Items</h2>
+              <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                <thead>
+                  <tr style="background-color: #4a90e2;">
+                    <th style="padding: 12px; color: white; text-align: left;">Item Name</th>
+                    <th style="padding: 12px; color: white; text-align: center;">Quantity</th>
+                    <th style="padding: 12px; color: white; text-align: left;">Unit</th>
+                    <th style="padding: 12px; color: white; text-align: left;">Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${orderItemsHtml}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <div style="text-align: center; color: #6c757d; font-size: 14px; margin-top: 20px;">
+            <p>This is an automated message, please do not reply directly to this email.</p>
+          </div>
+        </div>
+      `,
+    };
+    await this.transporter.sendMail(mailOptions);
+  }
+
+  async sendCancelOrderEmailToAdmin(to: string, order: Order) {
+    const orderItemsHtml = order.orderItems
+      .map(
+        (item) => `
+      <tr>
+        <td style="padding: 12px; border: 1px solid #dee2e6;">${item.medication ? item.medication.name : item.equipment.name}</td>
+        <td style="padding: 12px; border: 1px solid #dee2e6; text-align: center;">${item.quantity}</td>
+        <td style="padding: 12px; border: 1px solid #dee2e6; text-align: center;">${item.unit.abbreviation}</td>
+        <td style="padding: 12px; border: 1px solid #dee2e6;">${item.medication ? 'Medication' : 'Equipment'}</td>
+      </tr>
+    `,
+      )
+      .join('');
+
+    const mailOptions = {
+      from: process.env.GOOGLE_MAIL_USER,
+      to: to,
+      subject: 'Order cancelled - Admin Notification',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
+          <div style="background-color: #2c3e50; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 24px;">New Order Notification</h1>
+          </div>
+          
+          <div style="background-color: #f8f9fa; padding: 20px; border: 1px solid #dee2e6; border-radius: 0 0 8px 8px; margin-bottom: 20px;">
+            <div style="margin-bottom: 20px;">
+              <h2 style="color: #2c3e50; font-size: 18px; margin-bottom: 15px; border-bottom: 2px solid #2c3e50; padding-bottom: 10px;">Order Details</h2>
+              <p style="margin: 8px 0;"><strong style="color: #2c3e50;">Order ID:</strong> ${order.id}</p>
+              <p style="margin: 8px 0;"><strong style="color: #2c3e50;">Order Date:</strong> ${order.createdAt.toLocaleString()}</p>
+              <p style="margin: 8px 0;"><strong style="color: #2c3e50;">Status:</strong> ${order.status}</p>
+              <p style="margin: 8px 0;"><strong style="color: #2c3e50;">Notes:</strong> ${order.notes}</p>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+              <h2 style="color: #2c3e50; font-size: 18px; margin-bottom: 15px; border-bottom: 2px solid #2c3e50; padding-bottom: 10px;">Supplier Details</h2>
+              <p style="margin: 8px 0;"><strong style="color: #2c3e50;">Name:</strong> ${order.supplier?.name}</p>
+              <p style="margin: 8px 0;"><strong style="color: #2c3e50;">Email:</strong> ${order.supplier?.email}</p>
+              <p style="margin: 8px 0;"><strong style="color: #2c3e50;">Phone:</strong> ${order.supplier?.phone || 'N/A'}</p>
+              <p style="margin: 8px 0;"><strong style="color: #2c3e50;">Address:</strong> ${order.supplier?.address || 'N/A'}</p>
+            </div>
+
+            <div>
+              <h2 style="color: #2c3e50; font-size: 18px; margin-bottom: 15px; border-bottom: 2px solid #2c3e50; padding-bottom: 10px;">Order Items</h2>
+              <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                <thead>
+                  <tr style="background-color: #2c3e50;">
+                    <th style="padding: 12px; color: white; text-align: left;">Item Name</th>
+                    <th style="padding: 12px; color: white; text-align: center;">Quantity</th>
+                    <th style="padding: 12px; color: white; text-align: left;">Unit</th>
                     <th style="padding: 12px; color: white; text-align: left;">Type</th>
                   </tr>
                 </thead>

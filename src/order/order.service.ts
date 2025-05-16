@@ -202,6 +202,7 @@ export class OrderService extends BaseHospitalService {
         'orderItems.medication',
         'orderItems.equipment',
         'orderItems.unit', // Include unit in the relations
+        'supplier',
       ],
     });
     if (!order) {
@@ -229,6 +230,18 @@ export class OrderService extends BaseHospitalService {
           });
         }
       }
+    }
+
+    if (updateOrderDto.orderStatus === OrderStatus.CANCELLED) {
+      const user = await this.userService.findOneWithProfile(userId);
+
+      await this.mailService.sendCancelOrderEmailToSupplier(
+        order.supplier.email,
+        order,
+        user,
+      );
+
+      await this.mailService.sendCancelOrderEmailToAdmin(user.email, order);
     }
 
     Object.assign(order, { ...updateOrderDto, updatedById: userId });
