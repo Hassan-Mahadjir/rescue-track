@@ -42,6 +42,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy) {
         nationality: profile.nationality || null,
         gender: profile.gender || null,
         dateofBirth: profile.birthday || null,
+        hospitalID: 'c06dcd5d-b995-439e-ad73-98fffaac7c65',
       },
     );
 

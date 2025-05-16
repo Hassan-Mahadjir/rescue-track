@@ -51,7 +51,6 @@ export class PatientCareReportController {
   }
 
   @Get('/manage/stats')
-  @Roles(UserRole.ADMIN)
   getReportStats() {
     return this.patientCareReportService.getReportStats();
   }

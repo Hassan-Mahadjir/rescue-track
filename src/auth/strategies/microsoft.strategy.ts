@@ -47,6 +47,7 @@ export class MicrosoftStrategy extends PassportStrategy(Strategy) {
         nationality: profile._json.mobilePhone || null,
         gender: profile._json.mobilePhone || null,
         dateofBirth: profile._json.birthdate || null,
+        hospitalID: 'c06dcd5d-b995-439e-ad73-98fffaac7c65',
       },
     );
 
