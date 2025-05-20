@@ -12,6 +12,7 @@ import { CreateMedicalConditionDto } from './create-medical-condition.dto';
 import { CreateAllergyDto } from './create-allergy.dto';
 import { TrumaDto } from './create-truma.dto';
 import { CreateInjuryMechanismDto } from './create-InjuryMechanim.dto';
+import { CreateVitalSignDto } from './create-vital-sign.dto';
 
 export class CreatePatientCareReportDto {
   @IsNumber()
@@ -37,9 +38,10 @@ export class CreatePatientCareReportDto {
   @IsOptional()
   notes: string;
 
+  @IsOptional()
   @ValidateNested()
-  @Type(() => Treatment)
-  treatments: TreatmentDto;
+  @Type(() => CreateVitalSignDto)
+  vitalSigns: CreateVitalSignDto[];
 
   @ValidateNested()
   @Type(() => CreateMedicalConditionDto)

@@ -1,4 +1,11 @@
-import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsDate,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { TreatmentCategory } from 'src/enums/treatmentCategory.enums';
 import { Unit } from 'src/enums/unit.enums';
 
@@ -7,7 +14,17 @@ export class Treatment {
   name: string;
 
   @IsNumber()
-  quantity: number;
+  dosage: number;
+
+  @Type(() => Date)
+  @IsDate()
+  givenAt: Date;
+
+  @IsString()
+  route: string;
+
+  @IsString()
+  result: string;
 
   @IsEnum(Unit)
   @IsOptional()

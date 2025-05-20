@@ -16,6 +16,7 @@ import { Hospital } from 'src/entities/main/hospital.entity';
 import { DatabaseConnectionService } from 'src/database/database.service';
 import { Unit } from 'src/entities/unit.entity';
 import { Truma } from 'src/entities/truma.entity';
+import { VitalSign } from 'src/entities/vital-sign.entity';
 @Module({
   imports: [
     TypeOrmModule.forFeature(
@@ -29,6 +30,7 @@ import { Truma } from 'src/entities/truma.entity';
         Allergy,
         Unit,
         Truma,
+        VitalSign,
       ],
       'secondary',
     ),

@@ -27,6 +27,8 @@ import { TrumaDto } from './dto/create-truma.dto';
 import { UpdateTrumaDto } from './dto/update-truma.dto';
 import { CreateInjuryMechanismDto } from './dto/create-InjuryMechanim.dto';
 import { UpdateInjuryMechanism } from './dto/update-InjuryMechanism.dto';
+import { CreateVitalSignDto } from './dto/create-vital-sign.dto';
+import { UpdateVitalSignDto } from './dto/update-vital-sing.dto';
 
 @Controller('patient-care-report')
 export class PatientCareReportController {
@@ -105,11 +107,11 @@ export class PatientCareReportController {
 
   @Post('/treatment/:id')
   addTreatmentToReport(
-    @Param('id') reportId: string,
+    @Param('id') vitalSigntId: string,
     @Body() createTreatmentDto: Treatment,
   ) {
-    return this.patientCareReportService.addTreatmentToReport(
-      +reportId,
+    return this.patientCareReportService.addTreatmentToVitalSign(
+      +vitalSigntId,
       createTreatmentDto,
     );
   }
@@ -132,13 +134,14 @@ export class PatientCareReportController {
     return this.patientCareReportService.createAllergies(createAllergyDto);
   }
 
-  @Patch('/treatment/:id')
-  @Roles(UserRole.ADMIN)
-  updateTreatmentFromReport(
-    @Param('id') treatmentId: string,
+  @Patch('/treatment/:vitalSignId/:treatmentId')
+  updateTreatmentforVitalSing(
+    @Param('vitalSignId') vitalSignId: string,
+    @Param('treatmentId') treatmentId: string,
     @Body() updateTreatmentDto: UpdateTreatmentDto,
   ) {
-    return this.patientCareReportService.updateTreatmentFromReport(
+    return this.patientCareReportService.updateTreatmentForVitalSing(
+      +vitalSignId,
       +treatmentId,
       updateTreatmentDto,
     );
@@ -261,6 +264,35 @@ export class PatientCareReportController {
   removeInjuryMechanismFromReport(@Param('id') injuryMechanismId: string) {
     return this.patientCareReportService.removeInjuryMechanismFromReport(
       +injuryMechanismId,
+    );
+  }
+
+  @Post('/vital-signs/:id')
+  addVitalSignsToReport(
+    @Param('id') reportId: string,
+    @Body() vitalSigns: CreateVitalSignDto,
+  ) {
+    return this.patientCareReportService.addVitalSignsToReport(
+      +reportId,
+      vitalSigns,
+    );
+  }
+
+  @Patch('/vital-signs/:id')
+  updateVitalSignsFromReport(
+    @Param('id') vitalSignsId: string,
+    @Body() updateVitalSigns: UpdateVitalSignDto,
+  ) {
+    return this.patientCareReportService.updateVitalSignsFromReport(
+      +vitalSignsId,
+      updateVitalSigns,
+    );
+  }
+
+  @Delete('/vital-signs/:id')
+  removeVitalSignsFromReport(@Param('id') vitalSignsId: string) {
+    return this.patientCareReportService.removeVitalSignsFromReport(
+      +vitalSignsId,
     );
   }
 }

@@ -20,6 +20,7 @@ import { MedicalCondition } from './medical-condition.entity';
 import { Allergy } from './allergy.entity';
 import { Truma } from './truma.entity';
 import { InjuryMechanism } from './injury-mechanism.entity';
+import { VitalSign } from './vital-sign.entity';
 
 @Entity()
 export class PatientCareReport {
@@ -59,11 +60,6 @@ export class PatientCareReport {
   @OneToMany(() => UpdateHistory, (history) => history.patientCareReport)
   updateHistory: UpdateHistory[];
 
-  //Relationship with Treatment
-  @ManyToMany(() => Treatment, (treatment) => treatment.PCR)
-  @JoinTable({ name: 'PCR-Treatment' })
-  treatments: Treatment[];
-
   // Relationship with Run-Report
   @OneToOne(() => RunReport, (runReport) => runReport.patientCareReport, {
     nullable: false,
@@ -95,4 +91,9 @@ export class PatientCareReport {
   })
   @JoinColumn()
   injuryMechanism: InjuryMechanism[];
+
+  // Relationship with VitalSign
+  @OneToMany(() => VitalSign, (vitalSign) => vitalSign.PCR, { nullable: true })
+  @JoinColumn()
+  vitalSign: VitalSign[];
 }
