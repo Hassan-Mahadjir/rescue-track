@@ -25,6 +25,9 @@ import { Request } from 'express';
 import { BaseHospitalService } from 'src/database/base-hospital.service';
 import { DatabaseConnectionService } from 'src/database/database.service';
 import { Unit } from 'src/entities/unit.entity';
+import { Truma } from 'src/entities/truma.entity';
+import { UpdateTrumaDto } from './dto/update-truma.dto';
+import { TrumaDto } from './dto/create-truma.dto';
 
 @Injectable()
 export class PatientCareReportService extends BaseHospitalService {
@@ -41,13 +44,13 @@ export class PatientCareReportService extends BaseHospitalService {
     createPatientCareReportDto: CreatePatientCareReportDto,
   ) {
     const PCRRepository = await this.getRepository(PatientCareReport);
-    const runReportRepository = await this.getRepository(RunReport);
     const patientRepository = await this.getRepository(Patient);
     const treatmentRepository = await this.getRepository(Treatment);
     const medicalConditionRepository =
       await this.getRepository(MedicalCondition);
     const allergyRepository = await this.getRepository(Allergy);
     const unitRepository = await this.getRepository(Unit);
+    const trumaRepository = await this.getRepository(Truma);
 
     // const runReport = await runReportRepository.findOne({
     //   where: { id: createPatientCareReportDto.runReportId },
@@ -109,6 +112,13 @@ export class PatientCareReportService extends BaseHospitalService {
       }),
     );
 
+    const truma = await Promise.all(
+      createPatientCareReportDto.truma.map(async (t) => {
+        const truma = trumaRepository.create(t);
+        return await trumaRepository.save(truma);
+      }),
+    );
+
     const newPCR = PCRRepository.create({
       ...createPatientCareReportDto,
       patient,
@@ -116,6 +126,7 @@ export class PatientCareReportService extends BaseHospitalService {
       treatments: treatments,
       medicalConditions: medicalConditions,
       allergies: allergies,
+      truma: truma,
     });
 
     const savedPCR = await PCRRepository.save(newPCR);
@@ -136,6 +147,7 @@ export class PatientCareReportService extends BaseHospitalService {
         'patient',
         'allergies',
         'medicalConditions',
+        'truma',
       ],
     });
 
@@ -156,6 +168,7 @@ export class PatientCareReportService extends BaseHospitalService {
         'patient',
         'allergies',
         'medicalConditions',
+        'truma',
       ],
     });
 
@@ -189,6 +202,7 @@ export class PatientCareReportService extends BaseHospitalService {
         'patient',
         'allergies',
         'medicalConditions',
+        'truma',
       ],
     });
     if (!PCR)
@@ -220,6 +234,7 @@ export class PatientCareReportService extends BaseHospitalService {
         'patient',
         'allergies',
         'medicalConditions',
+        'truma',
       ],
     });
 
@@ -254,6 +269,7 @@ export class PatientCareReportService extends BaseHospitalService {
         'patient',
         'allergies',
         'medicalConditions',
+        'truma',
       ],
     });
 
@@ -398,6 +414,7 @@ export class PatientCareReportService extends BaseHospitalService {
         'medicalConditions',
         'runReport',
         'treatments.unit',
+        'truama',
       ],
     });
 
@@ -431,6 +448,10 @@ export class PatientCareReportService extends BaseHospitalService {
 
     if (report.medicalConditions.length > 0) {
       report.medicalConditions = [];
+    }
+
+    if (report.truma.length > 0) {
+      report.truma = [];
     }
 
     // Save the report with cleared relationships
@@ -911,6 +932,89 @@ export class PatientCareReportService extends BaseHospitalService {
       status: HttpStatus.FOUND,
       message: 'Stats data fatched',
       data: mergedStats,
+    };
+  }
+
+  async addTrumaToReport(reportId: number, createTrumaDto: TrumaDto) {
+    const PCRRepository = await this.getRepository(PatientCareReport);
+    const tramaRepository = await this.getRepository(Truma);
+
+    const report = await PCRRepository.findOne({
+      where: { id: reportId },
+      relations: ['truma'],
+    });
+
+    if (!report) {
+      throw new NotFoundException(`Report with id ${reportId} not found`);
+    }
+
+    // Check if the condition already exists in the report
+    const isDuplicate = report.truma.some(
+      (truma) => truma.name.toLowerCase() === createTrumaDto.name.toLowerCase(),
+    );
+
+    if (isDuplicate) {
+      return {
+        status: HttpStatus.CONFLICT,
+        message: 'Truma already exists in the report',
+      };
+    }
+
+    // Create a new medical condition entity
+    const newTruma = tramaRepository.create(createTrumaDto);
+
+    // Save the new condition to the database (optional depending on your model setup)
+    await tramaRepository.save(newTruma);
+
+    // Add the condition to the report
+    report.truma.push(newTruma);
+    await PCRRepository.save(report);
+
+    return {
+      status: HttpStatus.CREATED,
+      message: 'Truma added to report successfully',
+      data: newTruma,
+    };
+  }
+
+  async updateTrumaFromReport(TrumaId: number, updateTrumaDto: UpdateTrumaDto) {
+    const tramaRepository = await this.getRepository(Truma);
+    const truma = await tramaRepository.findOne({
+      where: { id: TrumaId },
+    });
+
+    if (!truma) {
+      throw new NotFoundException(`Truma with id ${TrumaId} not found`);
+    }
+
+    Object.assign(truma, updateTrumaDto);
+    const updatedTruma = await tramaRepository.save(truma);
+
+    return {
+      status: HttpStatus.OK,
+      message: 'Truma updated successfully',
+      data: updatedTruma,
+    };
+  }
+
+  async removeTrumaFromReport(turmaId: number) {
+    const tramaRepository = await this.getRepository(Truma);
+
+    const truma = await tramaRepository.findOne({
+      where: { id: turmaId },
+      relations: ['PCR'],
+    });
+
+    if (!truma) {
+      throw new NotFoundException(`Truma with id ${turmaId} not found`);
+    }
+
+    // Remove the medical condition from all associated PCRs
+    await tramaRepository.remove(truma);
+
+    return {
+      status: HttpStatus.OK,
+      message: 'truma removed successfully',
     };
   }
 }

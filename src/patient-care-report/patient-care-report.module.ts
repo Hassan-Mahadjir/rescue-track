@@ -15,6 +15,7 @@ import { Allergy } from 'src/entities/allergy.entity';
 import { Hospital } from 'src/entities/main/hospital.entity';
 import { DatabaseConnectionService } from 'src/database/database.service';
 import { Unit } from 'src/entities/unit.entity';
+import { Truma } from 'src/entities/truma.entity';
 @Module({
   imports: [
     TypeOrmModule.forFeature(
@@ -27,6 +28,7 @@ import { Unit } from 'src/entities/unit.entity';
         MedicalCondition,
         Allergy,
         Unit,
+        Truma,
       ],
       'secondary',
     ),

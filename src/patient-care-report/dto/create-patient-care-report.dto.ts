@@ -10,6 +10,7 @@ import { Treatment, TreatmentDto } from './create-treatement.dto';
 import { Condition } from 'src/enums/condition.enums';
 import { CreateMedicalConditionDto } from './create-medical-condition.dto';
 import { CreateAllergyDto } from './create-allergy.dto';
+import { TrumaDto } from './create-truma.dto';
 
 export class CreatePatientCareReportDto {
   @IsNumber()
@@ -46,4 +47,8 @@ export class CreatePatientCareReportDto {
   @ValidateNested()
   @Type(() => CreateAllergyDto)
   allergies: CreateAllergyDto[];
+
+  @ValidateNested()
+  @Type(() => TrumaDto)
+  truma: TrumaDto[];
 }

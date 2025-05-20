@@ -18,6 +18,7 @@ import { UpdateHistory } from './updateHistory.entity';
 import { RunReport } from './run-report.entity';
 import { MedicalCondition } from './medical-condition.entity';
 import { Allergy } from './allergy.entity';
+import { Truma } from './truma.entity';
 
 @Entity()
 export class PatientCareReport {
@@ -80,4 +81,9 @@ export class PatientCareReport {
   @ManyToMany(() => Allergy, (allergy) => allergy.PCR)
   @JoinTable({ name: 'PCR-Allergy' })
   allergies: Allergy[];
+
+  // Relationship with Truma
+  @OneToMany(() => Truma, (truma) => truma.PCR, { cascade: true })
+  @JoinColumn({ name: 'PCR-Truma' })
+  truma: Truma[];
 }

@@ -23,6 +23,8 @@ import { UpdateAllergyDto } from './dto/update-allergy.dto';
 import { CreateMedicalConditionDto } from './dto/create-medical-condition.dto';
 import { UpdateMedicalConditionDto } from './dto/update-medical-condition.dto';
 import { UserRole } from 'src/enums/user-role.enum';
+import { TrumaDto } from './dto/create-truma.dto';
+import { UpdateTrumaDto } from './dto/update-truma.dto';
 
 @Controller('patient-care-report')
 export class PatientCareReportController {
@@ -202,5 +204,32 @@ export class PatientCareReportController {
     return this.patientCareReportService.removeMedicalConditionFromReport(
       +medicalConditionId,
     );
+  }
+
+  @Post('/truma/:id')
+  addTrumaToReport(
+    @Param('id') reportId: string,
+    @Body() createTrumaDto: TrumaDto,
+  ) {
+    return this.patientCareReportService.addTrumaToReport(
+      +reportId,
+      createTrumaDto,
+    );
+  }
+
+  @Patch('/truma/:id')
+  updateTrumaFromReport(
+    @Param('id') trumaId: string,
+    @Body() updateTrumaDto: UpdateTrumaDto,
+  ) {
+    return this.patientCareReportService.updateTrumaFromReport(
+      +trumaId,
+      updateTrumaDto,
+    );
+  }
+
+  @Delete('/truma/:id')
+  removeTrumaFromReport(@Param('id') trumaId: string) {
+    return this.patientCareReportService.removeTrumaFromReport(+trumaId);
   }
 }
