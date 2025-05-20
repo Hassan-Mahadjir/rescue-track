@@ -11,6 +11,7 @@ import { Condition } from 'src/enums/condition.enums';
 import { CreateMedicalConditionDto } from './create-medical-condition.dto';
 import { CreateAllergyDto } from './create-allergy.dto';
 import { TrumaDto } from './create-truma.dto';
+import { CreateInjuryMechanismDto } from './create-InjuryMechanim.dto';
 
 export class CreatePatientCareReportDto {
   @IsNumber()
@@ -51,4 +52,8 @@ export class CreatePatientCareReportDto {
   @ValidateNested()
   @Type(() => TrumaDto)
   truma: TrumaDto[];
+
+  @ValidateNested()
+  @Type(() => CreateInjuryMechanismDto)
+  injuryMechanism: CreateInjuryMechanismDto[];
 }

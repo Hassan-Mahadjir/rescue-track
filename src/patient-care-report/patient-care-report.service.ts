@@ -28,6 +28,9 @@ import { Unit } from 'src/entities/unit.entity';
 import { Truma } from 'src/entities/truma.entity';
 import { UpdateTrumaDto } from './dto/update-truma.dto';
 import { TrumaDto } from './dto/create-truma.dto';
+import { InjuryMechanism } from 'src/entities/injury-mechanism.entity';
+import { CreateInjuryMechanismDto } from './dto/create-InjuryMechanim.dto';
+import { UpdateInjuryMechanism } from './dto/update-InjuryMechanism.dto';
 
 @Injectable()
 export class PatientCareReportService extends BaseHospitalService {
@@ -51,6 +54,7 @@ export class PatientCareReportService extends BaseHospitalService {
     const allergyRepository = await this.getRepository(Allergy);
     const unitRepository = await this.getRepository(Unit);
     const trumaRepository = await this.getRepository(Truma);
+    const InjuryMechanismRepository = await this.getRepository(InjuryMechanism);
 
     // const runReport = await runReportRepository.findOne({
     //   where: { id: createPatientCareReportDto.runReportId },
@@ -119,6 +123,13 @@ export class PatientCareReportService extends BaseHospitalService {
       }),
     );
 
+    const injuryMechanism = await Promise.all(
+      createPatientCareReportDto.injuryMechanism.map(async (im) => {
+        const injury = InjuryMechanismRepository.create(im);
+        return await InjuryMechanismRepository.save(injury);
+      }),
+    );
+
     const newPCR = PCRRepository.create({
       ...createPatientCareReportDto,
       patient,
@@ -127,6 +138,7 @@ export class PatientCareReportService extends BaseHospitalService {
       medicalConditions: medicalConditions,
       allergies: allergies,
       truma: truma,
+      injuryMechanism: injuryMechanism,
     });
 
     const savedPCR = await PCRRepository.save(newPCR);
@@ -148,6 +160,7 @@ export class PatientCareReportService extends BaseHospitalService {
         'allergies',
         'medicalConditions',
         'truma',
+        'injuryMechanism',
       ],
     });
 
@@ -169,6 +182,7 @@ export class PatientCareReportService extends BaseHospitalService {
         'allergies',
         'medicalConditions',
         'truma',
+        'injuryMechanism',
       ],
     });
 
@@ -203,6 +217,7 @@ export class PatientCareReportService extends BaseHospitalService {
         'allergies',
         'medicalConditions',
         'truma',
+        'injuryMechanism',
       ],
     });
     if (!PCR)
@@ -235,6 +250,7 @@ export class PatientCareReportService extends BaseHospitalService {
         'allergies',
         'medicalConditions',
         'truma',
+        'injuryMechanism',
       ],
     });
 
@@ -270,6 +286,7 @@ export class PatientCareReportService extends BaseHospitalService {
         'allergies',
         'medicalConditions',
         'truma',
+        'injuryMechanism',
       ],
     });
 
@@ -1015,6 +1032,103 @@ export class PatientCareReportService extends BaseHospitalService {
     return {
       status: HttpStatus.OK,
       message: 'truma removed successfully',
+    };
+  }
+
+  async addinjuryMechanismToReport(
+    reportId: number,
+    createinjuryMechanismDto: CreateInjuryMechanismDto,
+  ) {
+    const PCRRepository = await this.getRepository(PatientCareReport);
+    const InjuryMechanismRepository = await this.getRepository(InjuryMechanism);
+
+    const report = await PCRRepository.findOne({
+      where: { id: reportId },
+      relations: ['injuryMechanism'],
+    });
+
+    if (!report) {
+      throw new NotFoundException(`Report with id ${reportId} not found`);
+    }
+
+    // Check if the condition already exists in the report
+    const isDuplicate = report.injuryMechanism.some(
+      (mechanism) =>
+        mechanism.mechanism.toLowerCase() ===
+        createinjuryMechanismDto.mechanism.toLowerCase(),
+    );
+
+    if (isDuplicate) {
+      return {
+        status: HttpStatus.CONFLICT,
+        message: 'Injury Mechanism already exists in the report',
+      };
+    }
+
+    // Create a new medical condition entity
+    const newMechanism = InjuryMechanismRepository.create(
+      createinjuryMechanismDto,
+    );
+
+    // Save the new condition to the database (optional depending on your model setup)
+    await InjuryMechanismRepository.save(newMechanism);
+
+    // Add the condition to the report
+    report.injuryMechanism.push(newMechanism);
+    await PCRRepository.save(report);
+
+    return {
+      status: HttpStatus.CREATED,
+      message: 'Truma added to report successfully',
+      data: newMechanism,
+    };
+  }
+
+  async updateInjuryMechanismFromReport(
+    injuryMechanismId: number,
+    updateInjuryMechanismDto: UpdateInjuryMechanism,
+  ) {
+    const InjuryMechanismRepository = await this.getRepository(InjuryMechanism);
+    const injuryMechanism = await InjuryMechanismRepository.findOne({
+      where: { id: injuryMechanismId },
+    });
+
+    if (!injuryMechanism) {
+      throw new NotFoundException(
+        `injuryMechanism with id ${injuryMechanismId} not found`,
+      );
+    }
+
+    Object.assign(injuryMechanism, updateInjuryMechanismDto);
+    const updatedinjuryMechanism =
+      await InjuryMechanismRepository.save(injuryMechanism);
+
+    return {
+      status: HttpStatus.OK,
+      message: 'injuryMechanism updated successfully',
+      data: updatedinjuryMechanism,
+    };
+  }
+
+  async removeInjuryMechanismFromReport(injuryMechanismId: number) {
+    const InjuryMechanismRepository = await this.getRepository(InjuryMechanism);
+
+    const injuryMechanism = await InjuryMechanismRepository.findOne({
+      where: { id: injuryMechanismId },
+      relations: ['PCR'],
+    });
+    if (!injuryMechanism) {
+      throw new NotFoundException(
+        `Injury Mechanism with id ${injuryMechanismId} not found`,
+      );
+    }
+
+    // Remove the medical condition from all associated PCRs
+    await InjuryMechanismRepository.remove(injuryMechanism);
+
+    return {
+      status: HttpStatus.OK,
+      message: 'injury mechanism removed successfully',
     };
   }
 }

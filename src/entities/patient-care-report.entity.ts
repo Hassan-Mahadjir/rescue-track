@@ -19,6 +19,7 @@ import { RunReport } from './run-report.entity';
 import { MedicalCondition } from './medical-condition.entity';
 import { Allergy } from './allergy.entity';
 import { Truma } from './truma.entity';
+import { InjuryMechanism } from './injury-mechanism.entity';
 
 @Entity()
 export class PatientCareReport {
@@ -86,4 +87,12 @@ export class PatientCareReport {
   @OneToMany(() => Truma, (truma) => truma.PCR, { cascade: true })
   @JoinColumn({ name: 'PCR-Truma' })
   truma: Truma[];
+
+  // Relationship with InjuryMechanism
+  @OneToMany(() => InjuryMechanism, (injuryMechanism) => injuryMechanism.PCR, {
+    nullable: true,
+    cascade: true,
+  })
+  @JoinColumn()
+  injuryMechanism: InjuryMechanism[];
 }

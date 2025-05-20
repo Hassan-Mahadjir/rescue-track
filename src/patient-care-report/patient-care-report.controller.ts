@@ -25,6 +25,8 @@ import { UpdateMedicalConditionDto } from './dto/update-medical-condition.dto';
 import { UserRole } from 'src/enums/user-role.enum';
 import { TrumaDto } from './dto/create-truma.dto';
 import { UpdateTrumaDto } from './dto/update-truma.dto';
+import { CreateInjuryMechanismDto } from './dto/create-InjuryMechanim.dto';
+import { UpdateInjuryMechanism } from './dto/update-InjuryMechanism.dto';
 
 @Controller('patient-care-report')
 export class PatientCareReportController {
@@ -231,5 +233,34 @@ export class PatientCareReportController {
   @Delete('/truma/:id')
   removeTrumaFromReport(@Param('id') trumaId: string) {
     return this.patientCareReportService.removeTrumaFromReport(+trumaId);
+  }
+
+  @Post('/injury-mechanism/:id')
+  addInjuryMechanismToReport(
+    @Param('id') reportId: string,
+    @Body() createInjuryMechanismDto: CreateInjuryMechanismDto,
+  ) {
+    return this.patientCareReportService.addinjuryMechanismToReport(
+      +reportId,
+      createInjuryMechanismDto,
+    );
+  }
+
+  @Patch('/injury-mechanism/:id')
+  updateInjuryMechanismFromReport(
+    @Param('id') injuryMechanismId: string,
+    @Body() updateInjuryMechanismDto: UpdateInjuryMechanism,
+  ) {
+    return this.patientCareReportService.updateInjuryMechanismFromReport(
+      +injuryMechanismId,
+      updateInjuryMechanismDto,
+    );
+  }
+
+  @Delete('/injury-mechanism/:id')
+  removeInjuryMechanismFromReport(@Param('id') injuryMechanismId: string) {
+    return this.patientCareReportService.removeInjuryMechanismFromReport(
+      +injuryMechanismId,
+    );
   }
 }
