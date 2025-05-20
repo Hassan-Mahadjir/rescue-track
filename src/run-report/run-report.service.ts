@@ -27,15 +27,18 @@ export class RunReportService extends BaseHospitalService {
   ) {
     const runReportRepository = await this.getRepository(RunReport);
     const patientRepository = await this.getRepository(Patient);
+    let patient: Patient | null = null;
 
-    const patient = await patientRepository.findOne({
-      where: { id: createRunReportDto.patientId },
-    });
+    if (createRunReportDto.patientId) {
+      patient = await patientRepository.findOne({
+        where: { id: createRunReportDto.patientId },
+      });
 
-    if (!patient)
-      throw new NotFoundException(
-        `Patient with ${createRunReportDto.patientId} not found`,
-      );
+      if (!patient)
+        throw new NotFoundException(
+          `Patient with ${createRunReportDto.patientId} not found`,
+        );
+    }
 
     const newRunReport = runReportRepository.create({
       ...createRunReportDto,

@@ -49,26 +49,26 @@ export class PatientCareReportService extends BaseHospitalService {
     const allergyRepository = await this.getRepository(Allergy);
     const unitRepository = await this.getRepository(Unit);
 
-    const runReport = await runReportRepository.findOne({
-      where: { id: createPatientCareReportDto.runReportId },
-      relations: ['patient', 'patientCareReport'],
-    });
+    // const runReport = await runReportRepository.findOne({
+    //   where: { id: createPatientCareReportDto.runReportId },
+    //   relations: ['patient', 'patientCareReport'],
+    // });
 
-    if (!runReport) {
-      throw new NotFoundException(
-        `No report found with ID ${createPatientCareReportDto.runReportId}`,
-      );
-    }
+    // if (!runReport) {
+    //   throw new NotFoundException(
+    //     `No report found with ID ${createPatientCareReportDto.runReportId}`,
+    //   );
+    // }
 
-    // ✅ Check if this runReport already has a PCR
-    if (runReport.patientCareReport) {
-      throw new BadRequestException(
-        `This run report already has an associated patient care report.`,
-      );
-    }
+    // // ✅ Check if this runReport already has a PCR
+    // if (runReport.patientCareReport) {
+    //   throw new BadRequestException(
+    //     `This run report already has an associated patient care report.`,
+    //   );
+    // }
 
     const patient = await patientRepository.findOne({
-      where: { id: runReport.patient.id },
+      where: { id: createPatientCareReportDto.patientId },
     });
 
     if (!patient) {
@@ -77,11 +77,11 @@ export class PatientCareReportService extends BaseHospitalService {
       );
     }
 
-    if (runReport.patient.id !== patient.id) {
-      throw new BadRequestException(
-        `The run report is not associated with patient ID ${patient.id}`,
-      );
-    }
+    // if (runReport.patient.id !== patient.id) {
+    //   throw new BadRequestException(
+    //     `The run report is not associated with patient ID ${patient.id}`,
+    //   );
+    // }
 
     const treatments = await Promise.all(
       createPatientCareReportDto.treatments.map(async (t) => {
@@ -116,7 +116,6 @@ export class PatientCareReportService extends BaseHospitalService {
       treatments: treatments,
       medicalConditions: medicalConditions,
       allergies: allergies,
-      runReport,
     });
 
     const savedPCR = await PCRRepository.save(newPCR);

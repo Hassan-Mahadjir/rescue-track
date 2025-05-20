@@ -79,7 +79,7 @@ export class RunReport {
     cascade: true,
   })
   @JoinColumn()
-  patient: Patient;
+  patient: Patient | null;
 
   @OneToMany(() => UpdateHistory, (history) => history.runReport)
   updateHistory: UpdateHistory[];

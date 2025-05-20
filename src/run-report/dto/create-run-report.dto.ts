@@ -18,6 +18,7 @@ export class CreateRunReportDto {
   @IsString()
   caller?: string;
 
+  @IsOptional()
   @IsNumber()
   patientId: number;
 

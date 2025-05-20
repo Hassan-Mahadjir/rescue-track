@@ -16,6 +16,7 @@ export class CreatePatientCareReportDto {
   @IsOptional()
   patientId: number;
 
+  @IsOptional()
   @IsNumber()
   runReportId: number;
 

@@ -66,7 +66,7 @@ export class PatientCareReport {
   @OneToOne(() => RunReport, (runReport) => runReport.patientCareReport, {
     nullable: false,
   })
-  runReport: RunReport;
+  runReport: RunReport | null;
 
   // Relationship with MedicalCondition
   @ManyToMany(
