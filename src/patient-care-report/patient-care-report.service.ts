@@ -47,6 +47,9 @@ import {
   UpdateRESPDto,
   UpdateSkinDto,
 } from './dto/update-physical.dto';
+import { Therapy } from 'src/entities/therapy.entity';
+import { CreateTherapyDto } from './dto/create-therapy.dto';
+import { UpdateTherapyDto } from './dto/update-therapy.dto';
 
 @Injectable()
 export class PatientCareReportService extends BaseHospitalService {
@@ -75,6 +78,7 @@ export class PatientCareReportService extends BaseHospitalService {
     const pupilRepository = await this.getRepository(Pupil);
     const skinRepository = await this.getRepository(Skin);
     const respRepository = await this.getRepository(RESP);
+    const therapyRepository = await this.getRepository(Therapy);
 
     const patient = await patientRepository.findOne({
       where: { id: createPatientCareReportDto.patientId },
@@ -116,6 +120,13 @@ export class PatientCareReportService extends BaseHospitalService {
       createPatientCareReportDto.pupils.map(async (p) => {
         const pupil = pupilRepository.create({ PHSY: p.PHSY });
         return await pupilRepository.save(pupil);
+      }),
+    );
+
+    const therapies = await Promise.all(
+      createPatientCareReportDto.therapies.map(async (t) => {
+        const therapy = therapyRepository.create({ therapy: t.therapy });
+        return await pupilRepository.save(therapy);
       }),
     );
 
@@ -173,6 +184,7 @@ export class PatientCareReportService extends BaseHospitalService {
       pupil: pupils,
       skin: skins,
       resp: resps,
+      therapies: therapies,
     });
 
     const savedPCR = await PCRRepository.save(newPCR);
@@ -198,6 +210,7 @@ export class PatientCareReportService extends BaseHospitalService {
         'pupil',
         'skin',
         'resp',
+        'therapies',
       ],
     });
 
@@ -223,6 +236,7 @@ export class PatientCareReportService extends BaseHospitalService {
         'pupil',
         'skin',
         'resp',
+        'therapies',
       ],
     });
 
@@ -261,6 +275,7 @@ export class PatientCareReportService extends BaseHospitalService {
         'pupil',
         'skin',
         'resp',
+        'therapies',
       ],
     });
     if (!PCR)
@@ -297,6 +312,7 @@ export class PatientCareReportService extends BaseHospitalService {
         'pupil',
         'skin',
         'resp',
+        'therapies',
       ],
     });
 
@@ -1534,6 +1550,91 @@ export class PatientCareReportService extends BaseHospitalService {
     return {
       status: HttpStatus.OK,
       message: 'RESP removed successfully',
+    };
+  }
+
+  // --- Therapy ---
+  async addTherapyToReport(
+    reportId: number,
+    createTherapyDto: CreateTherapyDto,
+  ) {
+    const PCRRepository = await this.getRepository(PatientCareReport);
+    const therapyRepository = await this.getRepository(Therapy);
+
+    const report = await PCRRepository.findOne({
+      where: { id: reportId },
+      relations: ['therapies'],
+    });
+
+    if (!report) {
+      throw new NotFoundException(`Report with id ${reportId} not found`);
+    }
+
+    // Check if the therapy already exists in the report
+    const isDuplicate = report.therapies?.some(
+      (therapy) =>
+        therapy.therapy.toLowerCase() ===
+        createTherapyDto.therapy.toLowerCase(),
+    );
+
+    if (isDuplicate) {
+      return {
+        status: HttpStatus.CONFLICT,
+        message: 'Therapy already exists in the report',
+      };
+    }
+
+    const newTherapy = therapyRepository.create(createTherapyDto);
+    newTherapy.PCR = report;
+    await therapyRepository.save(newTherapy);
+    // No need to push to report.therapies, as the relation is handled by the DB
+    return {
+      status: HttpStatus.CREATED,
+      message: 'Therapy added to report successfully',
+      data: newTherapy,
+    };
+  }
+
+  async updateTherapyFromReport(
+    therapyId: number,
+    updateTherapyDto: UpdateTherapyDto,
+  ) {
+    const therapyRepository = await this.getRepository(Therapy);
+    const therapy = await therapyRepository.findOne({
+      where: { id: therapyId },
+    });
+
+    if (!therapy) {
+      throw new NotFoundException(`Therapy with id ${therapyId} not found`);
+    }
+
+    Object.assign(therapy, updateTherapyDto);
+    const updatedTherapy = await therapyRepository.save(therapy);
+
+    return {
+      status: HttpStatus.OK,
+      message: 'Therapy updated successfully',
+      data: updatedTherapy,
+    };
+  }
+
+  async removeTherapyFromReport(therapyId: number) {
+    const therapyRepository = await this.getRepository(Therapy);
+    const therapy = await therapyRepository.findOne({
+      where: { id: therapyId },
+      relations: ['PCR'],
+    });
+
+    if (!therapy) {
+      throw new NotFoundException(`Therapy with id ${therapyId} not found`);
+    }
+
+    // Remove the therapy from all associated PCRs
+    await therapyRepository.remove(therapy);
+
+    return {
+      status: HttpStatus.OK,
+      message: 'Therapy removed successfully',
     };
   }
 }

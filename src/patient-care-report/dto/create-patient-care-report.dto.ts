@@ -18,6 +18,7 @@ import {
   CreateRespDto,
   CreateSkinDto,
 } from './create-physical.dto';
+import { CreateTherapyDto } from './create-therapy.dto';
 
 export class CreatePatientCareReportDto {
   @IsNumber()
@@ -75,4 +76,8 @@ export class CreatePatientCareReportDto {
   @ValidateNested()
   @Type(() => CreateRespDto)
   resps: CreateRespDto[];
+
+  @ValidateNested()
+  @Type(() => CreateTherapyDto)
+  therapies: CreateTherapyDto[];
 }

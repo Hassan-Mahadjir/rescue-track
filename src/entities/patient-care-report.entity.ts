@@ -24,6 +24,7 @@ import { VitalSign } from './vital-sign.entity';
 import { Pupil } from './pupil.entity';
 import { Skin } from './skin.entity';
 import { RESP } from './RESP.entity';
+import { Therapy } from './therapy.entity';
 
 @Entity()
 export class PatientCareReport {
@@ -113,4 +114,12 @@ export class PatientCareReport {
   @OneToMany(() => RESP, (resp) => resp.PCR, { nullable: true, cascade: true })
   @JoinColumn()
   resp: RESP[];
+
+  // Relationship with Therapy
+  @OneToMany(() => Therapy, (therapy) => therapy.PCR, {
+    nullable: true,
+    cascade: true,
+  })
+  @JoinColumn()
+  therapies: Therapy[];
 }

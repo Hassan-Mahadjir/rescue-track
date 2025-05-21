@@ -37,6 +37,8 @@ import {
   UpdateRESPDto,
   UpdateSkinDto,
 } from './dto/update-physical.dto';
+import { CreateTherapyDto } from './dto/create-therapy.dto';
+import { UpdateTherapyDto } from './dto/update-therapy.dto';
 
 @Controller('patient-care-report')
 export class PatientCareReportController {
@@ -386,5 +388,33 @@ export class PatientCareReportController {
   @Delete('/resp/:id')
   removeRESPFromReport(@Param('id') respId: string) {
     return this.patientCareReportService.removeRESPFromReport(+respId);
+  }
+
+  // --- THERAPY ---
+  @Post('/therapy/:id')
+  addTherapyToReport(
+    @Param('id') reportId: string,
+    @Body() createTherapyDto: CreateTherapyDto,
+  ) {
+    return this.patientCareReportService.addTherapyToReport(
+      +reportId,
+      createTherapyDto,
+    );
+  }
+
+  @Patch('/therapy/:id')
+  updateTherapyFromReport(
+    @Param('id') therapyId: string,
+    @Body() updateTherapyDto: UpdateTherapyDto,
+  ) {
+    return this.patientCareReportService.updateTherapyFromReport(
+      +therapyId,
+      updateTherapyDto,
+    );
+  }
+
+  @Delete('/therapy/:id')
+  removeTherapyFromReport(@Param('id') therapyId: string) {
+    return this.patientCareReportService.removeTherapyFromReport(+therapyId);
   }
 }
