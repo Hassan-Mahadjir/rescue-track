@@ -14,8 +14,6 @@ import { PatientCareReportService } from './patient-care-report.service';
 import { CreatePatientCareReportDto } from './dto/create-patient-care-report.dto';
 import { UpdatePatientCareReportDto } from './dto/update-patient-care-report.dto';
 import { Roles } from 'src/auth/decorators/roles.decorator';
-import { Role } from 'src/auth/enums/role.enums';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth/jwt-auth.guard';
 import { Treatment, TreatmentDto } from './dto/create-treatement.dto';
 import { UpdateTreatmentDto } from './dto/update-treatement.dto';
 import { CreateAllergyDto } from './dto/create-allergy.dto';
@@ -29,6 +27,16 @@ import { CreateInjuryMechanismDto } from './dto/create-InjuryMechanim.dto';
 import { UpdateInjuryMechanism } from './dto/update-InjuryMechanism.dto';
 import { CreateVitalSignDto } from './dto/create-vital-sign.dto';
 import { UpdateVitalSignDto } from './dto/update-vital-sing.dto';
+import {
+  CreatePupilDto,
+  CreateRespDto,
+  CreateSkinDto,
+} from './dto/create-physical.dto';
+import {
+  UpdatePupilDto,
+  UpdateRESPDto,
+  UpdateSkinDto,
+} from './dto/update-physical.dto';
 
 @Controller('patient-care-report')
 export class PatientCareReportController {
@@ -294,5 +302,89 @@ export class PatientCareReportController {
     return this.patientCareReportService.removeVitalSignsFromReport(
       +vitalSignsId,
     );
+  }
+
+  // --- PUPIL ---
+  @Post('/pupil/:id')
+  addPupilToReport(
+    @Param('id') reportId: string,
+    @Body() createPupilDto: CreatePupilDto,
+  ) {
+    return this.patientCareReportService.addPupilToReport(
+      +reportId,
+      createPupilDto,
+    );
+  }
+
+  @Patch('/pupil/:id')
+  updatePupilFromReport(
+    @Param('id') pupilId: string,
+    @Body() updatePupilDto: UpdatePupilDto,
+  ) {
+    return this.patientCareReportService.updatePupilFromReport(
+      +pupilId,
+      updatePupilDto,
+    );
+  }
+
+  @Delete('/pupil/:id')
+  removePupilFromReport(@Param('id') pupilId: string) {
+    return this.patientCareReportService.removePupilFromReport(+pupilId);
+  }
+
+  // --- SKIN ---
+  @Post('/skin/:id')
+  addSkinToReport(
+    @Param('id') reportId: string,
+    @Body() createSkinDto: CreateSkinDto,
+  ) {
+    return this.patientCareReportService.addSkinToReport(
+      +reportId,
+      createSkinDto,
+    );
+  }
+
+  @Patch('/skin/:id')
+  updateSkinFromReport(
+    @Param('id') skinId: string,
+    @Body() updateSkinDto: UpdateSkinDto,
+  ) {
+    return this.patientCareReportService.updateSkinFromReport(
+      +skinId,
+      updateSkinDto,
+    );
+  }
+
+  @Delete('/skin/:id')
+  removeSkinFromReport(@Param('id') skinId: string) {
+    return this.patientCareReportService.removeSkinFromReport(+skinId);
+  }
+
+  // --- RESP ---
+  @Post('/resp/:id')
+  addRESPToReport(
+    @Param('id') reportId: string,
+    @Body() createRESPDto: CreateRespDto,
+  ) {
+    return this.patientCareReportService.addRESPToReport(
+      +reportId,
+      createRESPDto,
+    );
+  }
+
+  @Patch('/resp/:id')
+  updateRESPFromReport(
+    @Param('id') respId: string,
+    @Body() updateRESPDto: UpdateRESPDto,
+  ) {
+    return this.patientCareReportService.updateRESPFromReport(
+      +respId,
+      updateRESPDto,
+    );
+  }
+
+  @Delete('/resp/:id')
+  removeRESPFromReport(@Param('id') respId: string) {
+    return this.patientCareReportService.removeRESPFromReport(+respId);
   }
 }

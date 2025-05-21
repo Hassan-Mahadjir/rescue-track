@@ -13,6 +13,11 @@ import { CreateAllergyDto } from './create-allergy.dto';
 import { TrumaDto } from './create-truma.dto';
 import { CreateInjuryMechanismDto } from './create-InjuryMechanim.dto';
 import { CreateVitalSignDto } from './create-vital-sign.dto';
+import {
+  CreatePupilDto,
+  CreateRespDto,
+  CreateSkinDto,
+} from './create-physical.dto';
 
 export class CreatePatientCareReportDto {
   @IsNumber()
@@ -58,4 +63,16 @@ export class CreatePatientCareReportDto {
   @ValidateNested()
   @Type(() => CreateInjuryMechanismDto)
   injuryMechanism: CreateInjuryMechanismDto[];
+
+  @ValidateNested()
+  @Type(() => CreatePupilDto)
+  pupils: CreatePupilDto[];
+
+  @ValidateNested()
+  @Type(() => CreateSkinDto)
+  skins: CreateSkinDto[];
+
+  @ValidateNested()
+  @Type(() => CreateRespDto)
+  resps: CreateRespDto[];
 }

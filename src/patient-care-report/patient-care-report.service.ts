@@ -34,6 +34,19 @@ import { UpdateInjuryMechanism } from './dto/update-InjuryMechanism.dto';
 import { VitalSign } from 'src/entities/vital-sign.entity';
 import { CreateVitalSignDto } from './dto/create-vital-sign.dto';
 import { UpdateVitalSignDto } from './dto/update-vital-sing.dto';
+import { RESP } from 'src/entities/RESP.entity';
+import { Skin } from 'src/entities/skin.entity';
+import { Pupil } from 'src/entities/pupil.entity';
+import {
+  CreatePupilDto,
+  CreateRespDto,
+  CreateSkinDto,
+} from './dto/create-physical.dto';
+import {
+  UpdatePupilDto,
+  UpdateRESPDto,
+  UpdateSkinDto,
+} from './dto/update-physical.dto';
 
 @Injectable()
 export class PatientCareReportService extends BaseHospitalService {
@@ -59,6 +72,9 @@ export class PatientCareReportService extends BaseHospitalService {
     const trumaRepository = await this.getRepository(Truma);
     const InjuryMechanismRepository = await this.getRepository(InjuryMechanism);
     const vitalSignRepository = await this.getRepository(VitalSign);
+    const pupilRepository = await this.getRepository(Pupil);
+    const skinRepository = await this.getRepository(Skin);
+    const respRepository = await this.getRepository(RESP);
 
     const patient = await patientRepository.findOne({
       where: { id: createPatientCareReportDto.patientId },
@@ -93,6 +109,27 @@ export class PatientCareReportService extends BaseHospitalService {
 
         // save the vital sign with the treatments
         return await vitalSignRepository.save(vitalSign);
+      }),
+    );
+
+    const pupils = await Promise.all(
+      createPatientCareReportDto.pupils.map(async (p) => {
+        const pupil = pupilRepository.create({ PHSY: p.PHSY });
+        return await pupilRepository.save(pupil);
+      }),
+    );
+
+    const skins = await Promise.all(
+      createPatientCareReportDto.skins.map(async (s) => {
+        const skin = skinRepository.create(s);
+        return await skinRepository.save(skin);
+      }),
+    );
+
+    const resps = await Promise.all(
+      createPatientCareReportDto.resps.map(async (resp) => {
+        const RESP = respRepository.create(resp);
+        return await respRepository.save(RESP);
       }),
     );
 
@@ -133,6 +170,9 @@ export class PatientCareReportService extends BaseHospitalService {
       truma: truma,
       injuryMechanism: injuryMechanism,
       vitalSign: vitalSigns,
+      pupil: pupils,
+      skin: skins,
+      resp: resps,
     });
 
     const savedPCR = await PCRRepository.save(newPCR);
@@ -155,6 +195,9 @@ export class PatientCareReportService extends BaseHospitalService {
         'medicalConditions',
         'truma',
         'injuryMechanism',
+        'pupil',
+        'skin',
+        'resp',
       ],
     });
 
@@ -177,6 +220,9 @@ export class PatientCareReportService extends BaseHospitalService {
         'medicalConditions',
         'truma',
         'injuryMechanism',
+        'pupil',
+        'skin',
+        'resp',
       ],
     });
 
@@ -212,6 +258,9 @@ export class PatientCareReportService extends BaseHospitalService {
         'medicalConditions',
         'truma',
         'injuryMechanism',
+        'pupil',
+        'skin',
+        'resp',
       ],
     });
     if (!PCR)
@@ -245,6 +294,9 @@ export class PatientCareReportService extends BaseHospitalService {
         'medicalConditions',
         'truma',
         'injuryMechanism',
+        'pupil',
+        'skin',
+        'resp',
       ],
     });
 
@@ -830,7 +882,7 @@ export class PatientCareReportService extends BaseHospitalService {
           givenAt: treatmentDto.givenAt,
           route: treatmentDto.route,
           result: treatmentDto.result,
-          unit, // Associate the unit
+          unit: unit, // Associate the unit
         });
 
         await treatmentRepository.save(newTreatment);
@@ -1260,6 +1312,228 @@ export class PatientCareReportService extends BaseHospitalService {
     return {
       status: HttpStatus.OK,
       message: 'Vital sign removed successfully',
+    };
+  }
+
+  // --- PUPIL ---
+  async addPupilToReport(reportId: number, createPupilDto: CreatePupilDto) {
+    const PCRRepository = await this.getRepository(PatientCareReport);
+    const pupilRepository = await this.getRepository(Pupil);
+
+    const report = await PCRRepository.findOne({
+      where: { id: reportId },
+      relations: ['pupil'],
+    });
+
+    if (!report) {
+      throw new NotFoundException(`Report with id ${reportId} not found`);
+    }
+
+    // Check if the condition already exists in the report
+    const isDuplicate = report.pupil.some(
+      (pupil) => pupil.PHSY.toLowerCase() === createPupilDto.PHSY.toLowerCase(),
+    );
+
+    if (isDuplicate) {
+      return {
+        status: HttpStatus.CONFLICT,
+        message: 'Pupil already exists in the report',
+      };
+    }
+
+    // Create a new medical condition entity
+    const newPupil = pupilRepository.create(createPupilDto);
+
+    // Save the new condition to the database (optional depending on your model setup)
+    await pupilRepository.save(newPupil);
+
+    // Add the condition to the report
+    report.pupil.push(newPupil);
+    await PCRRepository.save(report);
+
+    return {
+      status: HttpStatus.CREATED,
+      message: 'Pupil added to report successfully',
+      data: newPupil,
+    };
+  }
+
+  async updatePupilFromReport(pupilId: number, updatePupilDto: UpdatePupilDto) {
+    const pupilRepository = await this.getRepository(Pupil);
+    const pupil = await pupilRepository.findOne({
+      where: { id: pupilId },
+    });
+
+    if (!pupil) {
+      throw new NotFoundException(`Pupil with id ${pupilId} not found`);
+    }
+
+    Object.assign(pupil, updatePupilDto);
+    const updatedPupil = await pupilRepository.save(pupil);
+
+    return {
+      status: HttpStatus.OK,
+      message: 'Pupil updated successfully',
+      data: updatedPupil,
+    };
+  }
+
+  async removePupilFromReport(pupilId: number) {
+    const pupilRepository = await this.getRepository(Pupil);
+
+    const pupil = await pupilRepository.findOne({
+      where: { id: pupilId },
+      relations: ['PCR'],
+    });
+
+    if (!pupil) {
+      throw new NotFoundException(`Pupil with id ${pupilId} not found`);
+    }
+
+    // Remove the medical condition from all associated PCRs
+    await pupilRepository.remove(pupil);
+
+    return {
+      status: HttpStatus.OK,
+      message: 'Pupil removed successfully',
+    };
+  }
+
+  // --- SKIN ---
+  async addSkinToReport(reportId: number, createSkinDto: CreateSkinDto) {
+    const PCRRepository = await this.getRepository(PatientCareReport);
+    const skinRepository = await this.getRepository(Skin);
+
+    const report = await PCRRepository.findOne({
+      where: { id: reportId },
+      relations: ['skin'],
+    });
+
+    if (!report) {
+      throw new NotFoundException(`Report with id ${reportId} not found`);
+    }
+
+    // Check if the skin status already exists in the report
+    const isDuplicate = report.skin?.some(
+      (skin) =>
+        skin.skin_status.toLowerCase() ===
+        createSkinDto.skin_status.toLowerCase(),
+    );
+
+    if (isDuplicate) {
+      return {
+        status: HttpStatus.CONFLICT,
+        message: 'Skin status already exists in the report',
+      };
+    }
+
+    const newSkin = skinRepository.create(createSkinDto);
+    newSkin.PCR = report;
+    await skinRepository.save(newSkin);
+    // No need to push to report.skin, as the relation is handled by the DB
+    return {
+      status: HttpStatus.CREATED,
+      message: 'Skin status added to report successfully',
+      data: newSkin,
+    };
+  }
+
+  async updateSkinFromReport(skinId: number, updateSkinDto: UpdateSkinDto) {
+    const skinRepository = await this.getRepository(Skin);
+    const skin = await skinRepository.findOne({ where: { id: skinId } });
+    if (!skin) {
+      throw new NotFoundException(`Skin with id ${skinId} not found`);
+    }
+    Object.assign(skin, updateSkinDto);
+    const updatedSkin = await skinRepository.save(skin);
+    return {
+      status: HttpStatus.OK,
+      message: 'Skin status updated successfully',
+      data: updatedSkin,
+    };
+  }
+
+  async removeSkinFromReport(skinId: number) {
+    const skinRepository = await this.getRepository(Skin);
+    const skin = await skinRepository.findOne({
+      where: { id: skinId },
+      relations: ['PCR'],
+    });
+    if (!skin) {
+      throw new NotFoundException(`Skin with id ${skinId} not found`);
+    }
+    await skinRepository.remove(skin);
+    return {
+      status: HttpStatus.OK,
+      message: 'Skin status removed successfully',
+    };
+  }
+
+  // --- RESP ---
+  async addRESPToReport(reportId: number, createRESPDto: CreateRespDto) {
+    const PCRRepository = await this.getRepository(PatientCareReport);
+    const respRepository = await this.getRepository(RESP);
+
+    const report = await PCRRepository.findOne({
+      where: { id: reportId },
+      relations: ['resp'],
+    });
+
+    if (!report) {
+      throw new NotFoundException(`Report with id ${reportId} not found`);
+    }
+
+    // Check if the RESP already exists in the report
+    const isDuplicate = report.resp?.some(
+      (resp) => resp.RESP.toLowerCase() === createRESPDto.RESP.toLowerCase(),
+    );
+
+    if (isDuplicate) {
+      return {
+        status: HttpStatus.CONFLICT,
+        message: 'RESP already exists in the report',
+      };
+    }
+
+    const newRESP = respRepository.create(createRESPDto);
+    newRESP.PCR = report;
+    await respRepository.save(newRESP);
+    // No need to push to report.resp, as the relation is handled by the DB
+    return {
+      status: HttpStatus.CREATED,
+      message: 'RESP added to report successfully',
+      data: newRESP,
+    };
+  }
+
+  async updateRESPFromReport(respId: number, updateRESPDto: UpdateRESPDto) {
+    const respRepository = await this.getRepository(RESP);
+    const resp = await respRepository.findOne({ where: { id: respId } });
+    if (!resp) {
+      throw new NotFoundException(`RESP with id ${respId} not found`);
+    }
+    Object.assign(resp, updateRESPDto);
+    const updatedRESP = await respRepository.save(resp);
+    return {
+      status: HttpStatus.OK,
+      message: 'RESP updated successfully',
+      data: updatedRESP,
+    };
+  }
+
+  async removeRESPFromReport(respId: number) {
+    const respRepository = await this.getRepository(RESP);
+    const resp = await respRepository.findOne({
+      where: { id: respId },
+      relations: ['PCR'],
+    });
+    if (!resp) {
+      throw new NotFoundException(`RESP with id ${respId} not found`);
+    }
+    await respRepository.remove(resp);
+    return {
+      status: HttpStatus.OK,
+      message: 'RESP removed successfully',
     };
   }
 }

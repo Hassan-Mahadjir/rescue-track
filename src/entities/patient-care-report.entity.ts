@@ -21,6 +21,9 @@ import { Allergy } from './allergy.entity';
 import { Truma } from './truma.entity';
 import { InjuryMechanism } from './injury-mechanism.entity';
 import { VitalSign } from './vital-sign.entity';
+import { Pupil } from './pupil.entity';
+import { Skin } from './skin.entity';
+import { RESP } from './RESP.entity';
 
 @Entity()
 export class PatientCareReport {
@@ -96,4 +99,18 @@ export class PatientCareReport {
   @OneToMany(() => VitalSign, (vitalSign) => vitalSign.PCR, { nullable: true })
   @JoinColumn()
   vitalSign: VitalSign[];
+
+  // Relationship with physical(pupil, skin, RESP)
+  @OneToMany(() => Pupil, (pupil) => pupil.PCR, {
+    nullable: true,
+    cascade: true,
+  })
+  @JoinColumn()
+  pupil: Pupil[];
+  @OneToMany(() => Skin, (skin) => skin.PCR, { nullable: true, cascade: true })
+  @JoinColumn()
+  skin: Skin[];
+  @OneToMany(() => RESP, (resp) => resp.PCR, { nullable: true, cascade: true })
+  @JoinColumn()
+  resp: RESP[];
 }
