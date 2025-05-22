@@ -12,6 +12,7 @@ import { DispatchPriority } from 'src/enums/dispatchPriority.enum';
 import { IncidentCategory } from 'src/enums/incidentCategory.enums';
 import { Relationship } from 'src/enums/relationship.enum';
 import { TransportStatus } from 'src/enums/transportStatus.emums';
+import { ServerityCode } from 'src/enums/Serverity-code.enums';
 
 export class CreateRunReportDto {
   @IsOptional()
@@ -19,11 +20,7 @@ export class CreateRunReportDto {
   caller?: string;
 
   @IsOptional()
-  @IsNumber()
-  patientId: number;
-
-  @IsOptional()
-  @IsPhoneNumber() // Optional: adjust based on your country (e.g., @IsPhoneNumber('US'))
+  @IsPhoneNumber()
   callerPhone?: string;
 
   @IsEnum(Relationship)
@@ -36,6 +33,10 @@ export class CreateRunReportDto {
   priority: DispatchPriority;
 
   @IsOptional()
+  @IsEnum(ServerityCode)
+  severtiyCode?: ServerityCode;
+
+  @IsOptional()
   @IsEnum(TransportStatus)
   transportStatus?: TransportStatus;
 
@@ -43,23 +44,71 @@ export class CreateRunReportDto {
   @IsNumber()
   mileage?: number;
 
+  @IsOptional()
   @Type(() => Date)
   @IsDate()
-  responseTime: Date;
+  responseTime?: Date;
 
+  @IsOptional()
   @Type(() => Date)
   @IsDate()
-  arrivalTimeAtScense: Date;
+  callReceivedTime?: Date;
 
+  @IsOptional()
   @Type(() => Date)
   @IsDate()
-  arrivalTimeAtPatient: Date;
+  notificationTime?: Date;
 
+  @IsOptional()
   @Type(() => Date)
   @IsDate()
-  departureTime: Date;
+  arrivalTimeAtScense?: Date;
+
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  arrivalTimeAtPatient?: Date;
+
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  departureTime?: Date;
+
+  @IsOptional()
+  @IsString()
+  fromLocation?: string;
+
+  @IsOptional()
+  @IsString()
+  toLocation?: string;
+
+  @IsOptional()
+  @IsString()
+  locationNote?: string;
+
+  @IsOptional()
+  @IsString()
+  ambulanceNumber?: string;
+
+  @IsOptional()
+  @IsString()
+  ambulanceDriver?: string;
+
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  arrivalTimeAtDestination?: Date;
+
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  departureTimeFromDestination?: Date;
 
   @IsString()
   @IsNotEmpty()
   notes: string;
+
+  @IsOptional()
+  @IsNumber()
+  patientId: number;
 }

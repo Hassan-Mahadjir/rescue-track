@@ -16,6 +16,8 @@ import {
 import { Patient } from './patient.entity';
 import { UpdateHistory } from './updateHistory.entity';
 import { PatientCareReport } from './patient-care-report.entity';
+import { Server } from 'http';
+import { ServerityCode } from 'src/enums/Serverity-code.enums';
 
 @Entity()
 export class RunReport {
@@ -37,6 +39,9 @@ export class RunReport {
   @Column({ type: 'enum', enum: DispatchPriority })
   priority: string;
 
+  @Column({ type: 'enum', enum: ServerityCode, default: ServerityCode.CODE_1 })
+  severtiyCode: ServerityCode;
+
   @Column({
     type: 'enum',
     enum: TransportStatus,
@@ -50,14 +55,41 @@ export class RunReport {
   @Column({ type: 'timestamp', nullable: true })
   responseTime: Date;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'timestamp', nullable: true })
+  callReceivedTime: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  notificationTime: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
   arrivalTimeAtScense: Date;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'timestamp', nullable: true })
   arrivalTimeAtPatient: Date;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'timestamp', nullable: true })
   departureTime: Date;
+
+  @Column({ nullable: true })
+  fromLocation: string;
+
+  @Column({ nullable: true })
+  toLocation: string;
+
+  @Column({ nullable: true })
+  locationNote: string;
+
+  @Column({ nullable: true })
+  ambulanceNumber: string;
+
+  @Column({ nullable: true })
+  ambulanceDriver: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  arrivalTimeAtDestination: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  departureTimeFromDestination: Date;
 
   @Column()
   notes: string;
