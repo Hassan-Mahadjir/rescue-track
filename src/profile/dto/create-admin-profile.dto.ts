@@ -25,6 +25,14 @@ export class CreateAdminProfileDto {
   @IsOptional()
   address: string;
 
+  @IsString()
+  @IsOptional()
+  city: string;
+
+  @IsString()
+  @IsOptional()
+  area: string;
+
   @IsPhoneNumber()
   phone: string;
 

@@ -26,10 +26,16 @@ export class Profile {
   @Column()
   lastName: string;
 
-  @Column({ nullable: true, type: 'text' })
+  @Column({ nullable: true, type: 'text', default: null })
   address: string | null;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, default: null, type: 'text' })
+  city: string | null;
+
+  @Column({ nullable: true, type: 'text' })
+  area: string | null;
+
+  @Column({ nullable: true, type: 'text' })
   phone: string;
 
   @Column({ nullable: true })

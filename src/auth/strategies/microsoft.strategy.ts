@@ -42,6 +42,8 @@ export class MicrosoftStrategy extends PassportStrategy(Strategy) {
         lastName: profile.name.familyName,
         avatar: profile._json.mobilePhone || null,
         middleName: profile._json.mobilePhone || null,
+        area: profile._json.mobilePhone || null,
+        city: profile._json.mobilePhone || null,
         address: profile._json.mobilePhone || null,
         phone: profile._json.mobilePhone || null,
         nationality: profile._json.mobilePhone || null,

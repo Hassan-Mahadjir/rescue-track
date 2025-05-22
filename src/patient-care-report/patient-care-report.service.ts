@@ -50,6 +50,10 @@ import {
 import { Therapy } from 'src/entities/therapy.entity';
 import { CreateTherapyDto } from './dto/create-therapy.dto';
 import { UpdateTherapyDto } from './dto/update-therapy.dto';
+import { SpecialCircumstance } from 'src/entities/special-circumstance.entity';
+import { GCS } from 'src/entities/gcs.entity';
+import { CreateCirumstanceDto } from './dto/create-special-circumstance.dto';
+import { UpdateCirumstanceDto } from './dto/update-special-circumstance.dto';
 
 @Injectable()
 export class PatientCareReportService extends BaseHospitalService {
@@ -79,6 +83,10 @@ export class PatientCareReportService extends BaseHospitalService {
     const skinRepository = await this.getRepository(Skin);
     const respRepository = await this.getRepository(RESP);
     const therapyRepository = await this.getRepository(Therapy);
+    const SpecialCircumstanceRepository =
+      await this.getRepository(SpecialCircumstance);
+
+    const gcsRepository = await this.getRepository(GCS);
 
     const patient = await patientRepository.findOne({
       where: { id: createPatientCareReportDto.patientId },
@@ -172,6 +180,18 @@ export class PatientCareReportService extends BaseHospitalService {
       }),
     );
 
+    const specialCircumstances = await Promise.all(
+      createPatientCareReportDto.circumstances.map(async (c) => {
+        const circumstance = SpecialCircumstanceRepository.create(c);
+        return await SpecialCircumstanceRepository.save(circumstance);
+      }),
+    );
+
+    const gcs = await gcsRepository.create({
+      ...createPatientCareReportDto.gcs,
+    });
+    const gcsSaved = await gcsRepository.save(gcs);
+
     const newPCR = PCRRepository.create({
       ...createPatientCareReportDto,
       patient,
@@ -185,6 +205,8 @@ export class PatientCareReportService extends BaseHospitalService {
       skin: skins,
       resp: resps,
       therapies: therapies,
+      circumstances: specialCircumstances,
+      gcs: gcsSaved,
     });
 
     const savedPCR = await PCRRepository.save(newPCR);
@@ -211,6 +233,8 @@ export class PatientCareReportService extends BaseHospitalService {
         'skin',
         'resp',
         'therapies',
+        'circumstances',
+        'gcs',
       ],
     });
 
@@ -237,6 +261,8 @@ export class PatientCareReportService extends BaseHospitalService {
         'skin',
         'resp',
         'therapies',
+        'circumstances',
+        'gcs',
       ],
     });
 
@@ -276,6 +302,8 @@ export class PatientCareReportService extends BaseHospitalService {
         'skin',
         'resp',
         'therapies',
+        'circumstances',
+        'gcs',
       ],
     });
     if (!PCR)
@@ -313,6 +341,8 @@ export class PatientCareReportService extends BaseHospitalService {
         'skin',
         'resp',
         'therapies',
+        'circumstances',
+        'gcs',
       ],
     });
 
@@ -1635,6 +1665,100 @@ export class PatientCareReportService extends BaseHospitalService {
     return {
       status: HttpStatus.OK,
       message: 'Therapy removed successfully',
+    };
+  }
+
+  // --- SPECIAL CIRCUMSTANCE ---
+  async addSpecialCircumstanceToReport(
+    reportId: number,
+    createSpecialCircumstanceDto: CreateCirumstanceDto,
+  ) {
+    const PCRRepository = await this.getRepository(PatientCareReport);
+    const specialCircumstanceRepository =
+      await this.getRepository(SpecialCircumstance);
+
+    const report = await PCRRepository.findOne({
+      where: { id: reportId },
+      relations: ['circumstances'],
+    });
+
+    if (!report) {
+      throw new NotFoundException(`Report with id ${reportId} not found`);
+    }
+
+    // Check if the circumstance already exists in the report
+    const isDuplicate = report.circumstances?.some(
+      (circ) =>
+        circ.circumstance.toLowerCase() ===
+        createSpecialCircumstanceDto.circumstance.toLowerCase(),
+    );
+
+    if (isDuplicate) {
+      return {
+        status: HttpStatus.CONFLICT,
+        message: 'Special circumstance already exists in the report',
+      };
+    }
+
+    const newCircumstance = specialCircumstanceRepository.create(
+      createSpecialCircumstanceDto,
+    );
+    newCircumstance.PCR = report;
+    await specialCircumstanceRepository.save(newCircumstance);
+    // No need to push to report.circumstances, as the relation is handled by the DB
+    return {
+      status: HttpStatus.CREATED,
+      message: 'Special circumstance added to report successfully',
+      data: newCircumstance,
+    };
+  }
+
+  async updateSpecialCircumstanceFromReport(
+    circumstanceId: number,
+    updateSpecialCircumstanceDto: UpdateCirumstanceDto,
+  ) {
+    const specialCircumstanceRepository =
+      await this.getRepository(SpecialCircumstance);
+    const circumstance = await specialCircumstanceRepository.findOne({
+      where: { id: circumstanceId },
+    });
+
+    if (!circumstance) {
+      throw new NotFoundException(
+        `Special circumstance with id ${circumstanceId} not found`,
+      );
+    }
+
+    Object.assign(circumstance, updateSpecialCircumstanceDto);
+    const updatedCircumstance =
+      await specialCircumstanceRepository.save(circumstance);
+
+    return {
+      status: HttpStatus.OK,
+      message: 'Special circumstance updated successfully',
+      data: updatedCircumstance,
+    };
+  }
+
+  async removeSpecialCircumstanceFromReport(circumstanceId: number) {
+    const specialCircumstanceRepository =
+      await this.getRepository(SpecialCircumstance);
+    const circumstance = await specialCircumstanceRepository.findOne({
+      where: { id: circumstanceId },
+      relations: ['PCR'],
+    });
+
+    if (!circumstance) {
+      throw new NotFoundException(
+        `Special circumstance with id ${circumstanceId} not found`,
+      );
+    }
+
+    await specialCircumstanceRepository.remove(circumstance);
+
+    return {
+      status: HttpStatus.OK,
+      message: 'Special circumstance removed successfully',
     };
   }
 }

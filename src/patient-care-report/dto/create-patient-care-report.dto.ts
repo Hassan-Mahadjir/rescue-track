@@ -19,6 +19,9 @@ import {
   CreateSkinDto,
 } from './create-physical.dto';
 import { CreateTherapyDto } from './create-therapy.dto';
+import { DietressLevel } from 'src/enums/dietressLevel.enums';
+import { CreateCirumstanceDto } from './create-special-circumstance.dto';
+import { CreateGCSDto } from './create-gcs.dto';
 
 export class CreatePatientCareReportDto {
   @IsNumber()
@@ -43,6 +46,9 @@ export class CreatePatientCareReportDto {
   @IsString()
   @IsOptional()
   notes: string;
+
+  @IsEnum(DietressLevel)
+  dietressLevel: DietressLevel;
 
   @IsOptional()
   @ValidateNested()
@@ -80,4 +86,10 @@ export class CreatePatientCareReportDto {
   @ValidateNested()
   @Type(() => CreateTherapyDto)
   therapies: CreateTherapyDto[];
+
+  @ValidateNested()
+  @Type(() => CreateCirumstanceDto)
+  circumstances: CreateCirumstanceDto[];
+
+  gcs: CreateGCSDto;
 }

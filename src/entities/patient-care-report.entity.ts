@@ -25,6 +25,9 @@ import { Pupil } from './pupil.entity';
 import { Skin } from './skin.entity';
 import { RESP } from './RESP.entity';
 import { Therapy } from './therapy.entity';
+import { DietressLevel } from 'src/enums/dietressLevel.enums';
+import { SpecialCircumstance } from './special-circumstance.entity';
+import { GCS } from './gcs.entity';
 
 @Entity()
 export class PatientCareReport {
@@ -48,6 +51,9 @@ export class PatientCareReport {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @Column({ type: 'enum', enum: DietressLevel, default: DietressLevel.NONE })
+  dietressLevel: DietressLevel;
 
   @Column()
   createdById: number;
@@ -122,4 +128,14 @@ export class PatientCareReport {
   })
   @JoinColumn()
   therapies: Therapy[];
+
+  // Relationship with special circumstance
+  @OneToMany(() => SpecialCircumstance, (special) => special.PCR)
+  @JoinColumn()
+  circumstances: SpecialCircumstance[];
+
+  // Relationship with GCS
+  @OneToOne(() => GCS, (gcs) => gcs.PCR, { nullable: true, cascade: true })
+  @JoinColumn()
+  gcs: GCS;
 }

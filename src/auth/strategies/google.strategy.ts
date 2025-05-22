@@ -38,6 +38,8 @@ export class GoogleStrategy extends PassportStrategy(Strategy) {
         avatar: profile.photos[0]?.value || '',
         middleName: profile.name.middleName || null,
         address: profile.address || null,
+        area: profile.address || null,
+        city: profile.adress || null,
         phone: profile.phone || null,
         nationality: profile.nationality || null,
         gender: profile.gender || null,

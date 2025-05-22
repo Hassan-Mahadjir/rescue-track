@@ -39,6 +39,8 @@ import {
 } from './dto/update-physical.dto';
 import { CreateTherapyDto } from './dto/create-therapy.dto';
 import { UpdateTherapyDto } from './dto/update-therapy.dto';
+import { CreateCirumstanceDto } from './dto/create-special-circumstance.dto';
+import { UpdateCirumstanceDto } from './dto/update-special-circumstance.dto';
 
 @Controller('patient-care-report')
 export class PatientCareReportController {
@@ -416,5 +418,35 @@ export class PatientCareReportController {
   @Delete('/therapy/:id')
   removeTherapyFromReport(@Param('id') therapyId: string) {
     return this.patientCareReportService.removeTherapyFromReport(+therapyId);
+  }
+
+  // --- SPECIAL CIRCUMSTANCE ---
+  @Post('/special-circumstance/:id')
+  addSpecialCircumstanceToReport(
+    @Param('id') reportId: string,
+    @Body() createSpecialCircumstanceDto: CreateCirumstanceDto,
+  ) {
+    return this.patientCareReportService.addSpecialCircumstanceToReport(
+      +reportId,
+      createSpecialCircumstanceDto,
+    );
+  }
+
+  @Patch('/special-circumstance/:id')
+  updateSpecialCircumstanceFromReport(
+    @Param('id') circumstanceId: string,
+    @Body() updateSpecialCircumstanceDto: UpdateCirumstanceDto,
+  ) {
+    return this.patientCareReportService.updateSpecialCircumstanceFromReport(
+      +circumstanceId,
+      updateSpecialCircumstanceDto,
+    );
+  }
+
+  @Delete('/special-circumstance/:id')
+  removeSpecialCircumstanceFromReport(@Param('id') circumstanceId: string) {
+    return this.patientCareReportService.removeSpecialCircumstanceFromReport(
+      +circumstanceId,
+    );
   }
 }
