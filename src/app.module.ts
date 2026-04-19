@@ -9,7 +9,6 @@ import { MailModule } from './mail/mail.module';
 import { ProfileModule } from './profile/profile.module';
 import dbConfig from './config/db.config';
 import dbConfigProduction from './config/db.config.production';
-import { DevtoolsModule } from '@nestjs/devtools-integration';
 import { PatientModule } from './patient/patient.module';
 import { PatientCareReportModule } from './patient-care-report/patient-care-report.module';
 import { RunReportModule } from './run-report/run-report.module';
@@ -26,9 +25,6 @@ import jwtConfig from './auth/config/jwt.config';
   controllers: [AppController],
   providers: [AppService],
   imports: [
-    DevtoolsModule.register({
-      http: process.env.NODE_ENV !== 'production',
-    }),
     ConfigModule.forRoot({
       isGlobal: true,
       expandVariables: true,
